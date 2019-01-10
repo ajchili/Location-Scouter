@@ -1,0 +1,7 @@
+.card {
+  width: 25%;
+}
+
+.card > div {
+  padding: 5px;
+}

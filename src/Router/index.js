@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import firebase from "../firebase";
 import { CircularProgress, Typography } from "@material-ui/core";
-import "./Router.css";
+import Login from "../Login";
 
 export default class extends Component {
   state = {
@@ -24,7 +24,9 @@ export default class extends Component {
     return (
       <div className="full">
         {hasLoaded ? (
-          <div>{authenticated ? <Router /> : <div />}</div>
+          <div>
+            {authenticated ? <Router /> : <Login className="centered" />}
+          </div>
         ) : (
           <div className="centered">
             <CircularProgress />
