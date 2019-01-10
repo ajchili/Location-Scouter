@@ -4,7 +4,7 @@ import firebase from "../firebase";
 import { CircularProgress, Typography } from "@material-ui/core";
 import Login from "../Login";
 import Navbar from "../Navbar";
-import Map from "../Map";
+import Locations from "../Locations";
 import "./Router.css";
 
 export default class extends Component {
@@ -33,7 +33,7 @@ export default class extends Component {
                 <div>
                   <Navbar />
                   <div className="content">
-                    <Route exact path="/" component={Map} />
+                    <Route exact path="/" component={Locations} />
                   </div>
                 </div>
               </Router>

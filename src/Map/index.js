@@ -5,7 +5,7 @@ import "./Map.css";
 export default class extends Component {
   render() {
     return (
-      <div className="map">
+      <div className="fill">
         <GoogleMapReact
           bootstrapURLKeys={{ key: process.env.REACT_APP_GOOGLE_MAPS_KEY }}
           defaultCenter={{
