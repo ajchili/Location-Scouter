@@ -1,9 +1,11 @@
 import React, { Component } from "react";
-import { BrowserRouter as Router, Switch } from "react-router-dom";
+import { BrowserRouter as Router, Route } from "react-router-dom";
 import firebase from "../firebase";
 import { CircularProgress, Typography } from "@material-ui/core";
 import Login from "../Login";
 import Navbar from "../Navbar";
+import Map from "../Map";
+import "./Router.css";
 
 export default class extends Component {
   state = {
@@ -30,7 +32,9 @@ export default class extends Component {
               <Router>
                 <div>
                   <Navbar />
-                  <Switch />
+                  <div className="content">
+                    <Route exact path="/" component={Map} />
+                  </div>
                 </div>
               </Router>
             ) : (
