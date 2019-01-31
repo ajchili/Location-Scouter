@@ -1,9 +1,8 @@
 import React, { Component } from "react";
 import firebase, { provider } from "../firebase";
 import { Button, Card, Typography } from "@material-ui/core";
-import "./Login.css";
 
-export default class extends Component {
+class Login extends Component {
   state = {
     error: null
   };
@@ -19,10 +18,10 @@ export default class extends Component {
   render() {
     const { error } = this.state;
     return (
-      <Card className="centered card">
-        <div>
+      <Card className="centered" style={styles.card}>
+        <div style={styles.cardContent}>
           <Typography variant="h5" component="h2" gutterBottom>
-            Login
+            Location Scouter
           </Typography>
           {error && (
             <Typography variant="caption" color="error" gutterBottom>
@@ -37,3 +36,14 @@ export default class extends Component {
     );
   }
 }
+
+const styles = {
+  card: {
+    width: "25%"
+  },
+  cardContent: {
+    padding: 5
+  }
+};
+
+export default Login;
