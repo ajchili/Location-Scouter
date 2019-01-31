@@ -1,14 +1,12 @@
 import React, { Component } from "react";
 import LocationsList from "../LocationsList";
 import Map from "../Map";
-import CreateLocationHereDialog from "../CreateLocationHereDialog";
 import CreateCategoryDialog from "../CreateCategoryDialog";
 import EditCategoryDialog from "../EditCategoryDialog";
 import firebase from "../firebase";
 
 class Locations extends Component {
   state = {
-    createLocationHereDialogOpen: false,
     createCategoryDialogOpen: false,
     editCategoryDialogOpen: false,
     coords: null,
@@ -35,34 +33,32 @@ class Locations extends Component {
   }
 
   _onMapClick = coords => {
-    this.setState({ createLocationHereDialogOpen: true, coords });
+    
   };
 
   _onCategoryClick = id => {
     this.setState({ editCategory: id, editCategoryDialogOpen: true });
   };
 
-  _onCreateLocationHereDialogClosed = value => {
-    this.setState({ createLocationHereDialogOpen: false });
-  };
-
   _onCreateCategoryDialogClosed = value => {
     this.setState({ createCategoryDialogOpen: false });
-    let user = firebase.auth().currentUser;
-    if (user) {
-      let data = {
-        owner: user.uid,
-        name: value
-      };
-      firebase
-        .firestore()
-        .collection("categories")
-        .add(data)
-        .then(documentRef => {
-          const { categories } = this.state;
-          categories.push({ id: documentRef.id, ...data });
-          this.setState({ categories });
-        });
+    if (value) {
+      let user = firebase.auth().currentUser;
+      if (user) {
+        let data = {
+          owner: user.uid,
+          name: value
+        };
+        firebase
+          .firestore()
+          .collection("categories")
+          .add(data)
+          .then(documentRef => {
+            const { categories } = this.state;
+            categories.push({ id: documentRef.id, ...data });
+            this.setState({ categories });
+          });
+      }
     }
   };
 
@@ -98,7 +94,6 @@ class Locations extends Component {
 
   render() {
     const {
-      createLocationHereDialogOpen,
       createCategoryDialogOpen,
       editCategoryDialogOpen,
       categories,
@@ -106,10 +101,6 @@ class Locations extends Component {
     } = this.state;
     return (
       <div style={styles.content}>
-        <CreateLocationHereDialog
-          open={createLocationHereDialogOpen}
-          onClose={this._onCreateLocationHereDialogClosed}
-        />
         <CreateCategoryDialog
           open={createCategoryDialogOpen}
           onClose={this._onCreateCategoryDialogClosed}
