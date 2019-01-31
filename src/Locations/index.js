@@ -26,7 +26,13 @@ class Locations extends Component {
           for (let i = 0; i < querySnapshot.docs.length; i++) {
             let { categories } = this.state;
             const doc = querySnapshot.docs[i];
-            let category = { id: doc.id, ...doc.data(), locations: [] };
+            let isShared = !!doc.data().viewers;
+            let category = {
+              id: doc.id,
+              ...doc.data(),
+              locations: [],
+              text: isShared ? "Shared" : "Private"
+            };
             try {
               let locationsQuerySnapshot = await firebase
                 .firestore()

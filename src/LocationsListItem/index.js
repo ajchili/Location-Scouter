@@ -36,7 +36,7 @@ class LocationsListItem extends Component {
       <div>
         <ListItem button onClick={this._onClick}>
           <CategoryIcon style={{ color }} />
-          <ListItemText inset primary={category.name} />
+          <ListItemText inset primary={category.name} secondary={category.text} />
           {!!category.locations.length && (
             <div onClick={this._onToggleClick}>
               {open ? <ExpandLess /> : <ExpandMore />}
