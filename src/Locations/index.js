@@ -26,7 +26,7 @@ class Locations extends Component {
           for (let i = 0; i < querySnapshot.docs.length; i++) {
             let { categories } = this.state;
             const doc = querySnapshot.docs[i];
-            let category = { id: doc.id, ...doc.data() };
+            let category = { id: doc.id, ...doc.data(), locations: [] };
             try {
               let locationsQuerySnapshot = await firebase
                 .firestore()
@@ -37,7 +37,9 @@ class Locations extends Component {
                 return { id: doc.id, ...doc.data() };
               });
             } catch (err) {
-              console.error(`Unable to load locations for category ${category.name}!`);
+              console.error(
+                `Unable to load locations for category ${category.name}!`
+              );
             } finally {
               categories.push(category);
               this.setState({ categories });

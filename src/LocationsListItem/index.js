@@ -1,10 +1,7 @@
 import React, { Component } from "react";
-import {
-  Collapse,
-  ListItem,
-  ListItemText
-} from "@material-ui/core";
+import { Collapse, List, ListItem, ListItemText } from "@material-ui/core";
 import CategoryIcon from "@material-ui/icons/Category";
+import LocationIcon from "@material-ui/icons/PinDrop";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 import PropTypes from "prop-types";
@@ -42,7 +39,16 @@ class LocationsListItem extends Component {
             {open ? <ExpandLess /> : <ExpandMore />}
           </div>
         </ListItem>
-        <Collapse in={open} timeout="auto" unmountOnExit />
+        <Collapse in={open} timeout="auto" unmountOnExit>
+          <List>
+            {category.locations.map(location => (
+              <ListItem key={location.id} button style={{ paddingLeft: 30 }}>
+                <LocationIcon />
+                <ListItemText inset primary={location.name} />
+              </ListItem>
+            ))}
+          </List>
+        </Collapse>
       </div>
     );
   }

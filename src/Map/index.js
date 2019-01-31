@@ -89,6 +89,18 @@ const NewLocation = ({
   </div>
 );
 
+const Location = ({ color }) => (
+  <LocationIcon
+    style={{
+      color: color,
+      width: iconSize / 2,
+      height: iconSize / 2,
+      marginLeft: -iconSize / 4,
+      marginTop: -iconSize / 4
+    }}
+  />
+);
+
 class Map extends Component {
   state = {
     newLocationName: "",
@@ -164,6 +176,18 @@ class Map extends Component {
               error={error}
             />
           )}
+          {categories.map(category => {
+            return category.locations.map(location => {
+              return (
+                <Location
+                  key={location.id}
+                  color={category.color || "#000000"}
+                  lat={location.lat}
+                  lng={location.lng}
+                />
+              );
+            });
+          })}
         </GoogleMapReact>
       </div>
     );
