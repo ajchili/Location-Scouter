@@ -1,12 +1,15 @@
 import React, { Component } from "react";
 import GoogleMapReact from "google-map-react";
-import "./Map.css";
+import PropTypes from "prop-types";
 
-export default class extends Component {
+class Map extends Component {
   render() {
+    const { onClick } = this.props;
+
     return (
-      <div className="fill">
+      <div style={styles.fill}>
         <GoogleMapReact
+          onClick={onClick}
           bootstrapURLKeys={{ key: process.env.REACT_APP_GOOGLE_MAPS_KEY }}
           defaultCenter={{
             lat: 39.8283,
@@ -18,3 +21,16 @@ export default class extends Component {
     );
   }
 }
+
+Map.propTypes = {
+  onClick: PropTypes.func
+};
+
+const styles = {
+  fill: {
+    width: "100%",
+    height: "100%"
+  }
+};
+
+export default Map;

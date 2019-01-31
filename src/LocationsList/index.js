@@ -10,7 +10,14 @@ class LocationList extends Component {
 
   _onCreateNewDialogClose = value => {
     this.setState({ createNewDialogOpen: false });
-    // TODO: Handle value
+    switch (value) {
+      case "category":
+        break;
+      case "location":
+        break;
+      default:
+        break;
+    }
   };
 
   render() {
