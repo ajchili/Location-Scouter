@@ -69,8 +69,8 @@ class Locations extends Component {
           .collection("categories")
           .add(data)
           .then(documentRef => {
-            const { categories } = this.state;
-            categories.push({ id: documentRef.id, ...data });
+            let { categories } = this.state;
+            categories.push({ id: documentRef.id, ...data, locations: [] });
             this.setState({ categories });
           });
       }
@@ -112,7 +112,12 @@ class Locations extends Component {
     let category = categories.find(
       category => category.id === selectedCategory
     );
-    let data = { name, category: category.id };
+    let data = {
+      name,
+      category: category.id,
+      lat: coords.lat,
+      lng: coords.lng
+    };
     firebase
       .firestore()
       .collection("locations")
@@ -121,7 +126,7 @@ class Locations extends Component {
         const location = { id: databaseRef.id, ...data };
         if (category.locations) category.locations.push(location);
         else category.locations = [location];
-        console.log(categories);
+        this.setState({ categories });
       });
     this.setState({ coords: null });
   };
