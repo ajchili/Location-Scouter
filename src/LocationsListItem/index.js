@@ -37,9 +37,11 @@ class LocationsListItem extends Component {
         <ListItem button onClick={this._onClick}>
           <CategoryIcon style={{ color }} />
           <ListItemText inset primary={category.name} />
-          <div onClick={this._onToggleClick}>
-            {open ? <ExpandLess /> : <ExpandMore />}
-          </div>
+          {!!category.locations.length && (
+            <div onClick={this._onToggleClick}>
+              {open ? <ExpandLess /> : <ExpandMore />}
+            </div>
+          )}
         </ListItem>
         <Collapse in={open} timeout="auto" unmountOnExit>
           <List>
