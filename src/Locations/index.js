@@ -22,18 +22,33 @@ class Locations extends Component {
         .collection("categories")
         .where("owner", "==", user.uid)
         .get()
-        .then(querySnapshot => {
-          querySnapshot.docs.forEach(doc => {
+        .then(async querySnapshot => {
+          for (let i = 0; i < querySnapshot.docs.length; i++) {
             let { categories } = this.state;
-            categories.push({ id: doc.id, ...doc.data() });
-            this.setState({ categories });
-          });
+            const doc = querySnapshot.docs[i];
+            let category = { id: doc.id, ...doc.data() };
+            try {
+              let locationsQuerySnapshot = await firebase
+                .firestore()
+                .collection("locations")
+                .where("category", "==", doc.id)
+                .get();
+              category.locations = locationsQuerySnapshot.docs.map(doc => {
+                return { id: doc.id, ...doc.data() };
+              });
+            } catch (err) {
+              console.error(`Unable to load locations for category ${category.name}!`);
+            } finally {
+              categories.push(category);
+              this.setState({ categories });
+            }
+          }
         });
     }
   }
 
   _onMapClick = coords => {
-    
+    this.setState({ coords });
   };
 
   _onCategoryClick = id => {
@@ -83,7 +98,32 @@ class Locations extends Component {
         break;
       case "obejct":
         break;
+      default:
+        break;
     }
+  };
+
+  _onCreateNewLocationCanceled = () => {
+    this.setState({ coords: null });
+  };
+
+  _onCreateNewLocation = (name, selectedCategory) => {
+    const { coords, categories } = this.state;
+    let category = categories.find(
+      category => category.id === selectedCategory
+    );
+    let data = { name, category: category.id };
+    firebase
+      .firestore()
+      .collection("locations")
+      .add(data)
+      .then(databaseRef => {
+        const location = { id: databaseRef.id, ...data };
+        if (category.locations) category.locations.push(location);
+        else category.locations = [location];
+        console.log(categories);
+      });
+    this.setState({ coords: null });
   };
 
   _shouldShowDialog = dialogName => {
@@ -96,9 +136,11 @@ class Locations extends Component {
     const {
       createCategoryDialogOpen,
       editCategoryDialogOpen,
+      coords,
       categories,
       editCategory
     } = this.state;
+
     return (
       <div style={styles.content}>
         <CreateCategoryDialog
@@ -113,7 +155,13 @@ class Locations extends Component {
           />
         )}
         <div style={styles.map}>
-          <Map onClick={this._onMapClick} />
+          <Map
+            onClick={this._onMapClick}
+            newLocation={coords}
+            onCreateNewLocationCanceled={this._onCreateNewLocationCanceled}
+            onCreateNewLocation={this._onCreateNewLocation}
+            categories={categories}
+          />
         </div>
         <div style={styles.list}>
           <LocationsList
