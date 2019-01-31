@@ -5,7 +5,8 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  TextField
+  TextField,
+  Tooltip
 } from "@material-ui/core";
 import Proptypes from "prop-types";
 
@@ -39,8 +40,8 @@ class EditCategoryDialog extends Component {
   };
 
   _delete = () => {
-    const { onClose } = this.props;
-    if (onClose) onClose("delete");
+    const { onClose, category } = this.props;
+    if (onClose) onClose(category.locations.length ? null : "delete");
   };
 
   render() {
@@ -62,9 +63,20 @@ class EditCategoryDialog extends Component {
           />
         </DialogContent>
         <DialogActions>
-          <Button color="secondary" onClick={this._delete}>
-            Delete
-          </Button>
+          <Tooltip
+            title="Unable to delete categories that have locations."
+            aria-label="Unable to delete categories that have locations."
+          >
+            <div>
+              <Button
+                color="secondary"
+                onClick={this._delete}
+                disabled={!!category.locations.length}
+              >
+                Delete
+              </Button>
+            </div>
+          </Tooltip>
           <Button color="primary" onClick={this._onClose}>
             Close
           </Button>
