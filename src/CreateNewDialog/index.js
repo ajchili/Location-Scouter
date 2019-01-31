@@ -9,7 +9,7 @@ import {
   ListItemText
 } from "@material-ui/core";
 import CategoryIcon from "@material-ui/icons/Category";
-import LocationIcon from "@material-ui/icons/PinDrop";
+import LocationIcon from "@material-ui/icons/LocationOn";
 import Proptypes from "prop-types";
 
 class CreateNewDialog extends Component {

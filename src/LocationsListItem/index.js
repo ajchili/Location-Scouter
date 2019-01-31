@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Collapse, List, ListItem, ListItemText } from "@material-ui/core";
 import CategoryIcon from "@material-ui/icons/Category";
-import LocationIcon from "@material-ui/icons/PinDrop";
+import LocationIcon from "@material-ui/icons/LocationOn";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 import PropTypes from "prop-types";
