@@ -3,14 +3,17 @@ import LocationsList from "../LocationsList";
 import Map from "../Map";
 import CreateLocationHereDialog from "../CreateLocationHereDialog";
 import CreateCategoryDialog from "../CreateCategoryDialog";
+import EditCategoryDialog from "../EditCategoryDialog";
 import firebase from "../firebase";
 
 class Locations extends Component {
   state = {
     createLocationHereDialogOpen: false,
     createCategoryDialogOpen: false,
+    editCategoryDialogOpen: false,
     coords: null,
-    categories: []
+    categories: [],
+    editCategory: false
   };
 
   componentDidMount() {
@@ -33,6 +36,10 @@ class Locations extends Component {
 
   _onMapClick = coords => {
     this.setState({ createLocationHereDialogOpen: true, coords });
+  };
+
+  _onCategoryClick = id => {
+    this.setState({ editCategory: id, editCategoryDialogOpen: true });
   };
 
   _onCreateLocationHereDialogClosed = value => {
@@ -59,6 +66,30 @@ class Locations extends Component {
     }
   };
 
+  _onEditCategoryDialogClosed = value => {
+    const { editCategory } = this.state;
+    this.setState({ editCategory: null, editCategoryDialogOpen: false });
+    switch (typeof value) {
+      case "string":
+        firebase
+          .firestore()
+          .collection("categories")
+          .doc(editCategory)
+          .delete()
+          .then(() => {
+            let { categories } = this.state;
+            this.setState({
+              categories: categories.filter(
+                category => category.id !== editCategory
+              )
+            });
+          });
+        break;
+      case "obejct":
+        break;
+    }
+  };
+
   _shouldShowDialog = dialogName => {
     if (dialogName === "category") {
       this.setState({ createCategoryDialogOpen: true });
@@ -69,7 +100,9 @@ class Locations extends Component {
     const {
       createLocationHereDialogOpen,
       createCategoryDialogOpen,
-      categories
+      editCategoryDialogOpen,
+      categories,
+      editCategory
     } = this.state;
     return (
       <div style={styles.content}>
@@ -81,12 +114,20 @@ class Locations extends Component {
           open={createCategoryDialogOpen}
           onClose={this._onCreateCategoryDialogClosed}
         />
+        {editCategory && (
+          <EditCategoryDialog
+            open={editCategoryDialogOpen}
+            onClose={this._onEditCategoryDialogClosed}
+            category={categories.find(category => category.id === editCategory)}
+          />
+        )}
         <div style={styles.map}>
           <Map onClick={this._onMapClick} />
         </div>
         <div style={styles.list}>
           <LocationsList
             categories={categories}
+            onCategoryClick={this._onCategoryClick}
             shouldShowDialog={this._shouldShowDialog}
           />
         </div>

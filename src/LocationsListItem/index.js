@@ -18,9 +18,9 @@ class LocationsListItem extends Component {
   };
 
   _onClick = () => {
-    const { onClick } = this.props;
+    const { category, onClick } = this.props;
     if (toggling) return (toggling = false);
-    if (onClick) onClick();
+    if (onClick) onClick(category.id);
   };
 
   _onToggleClick = () => {

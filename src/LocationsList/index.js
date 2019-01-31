@@ -13,7 +13,6 @@ class LocationList extends Component {
   _onCreateNewDialogClose = value => {
     const { shouldShowDialog } = this.props;
     if (shouldShowDialog) shouldShowDialog(value);
-    else throw Error("Missing required prop, shouldShowDialog!");
     this.setState({ createNewDialogOpen: false });
   };
 
@@ -35,7 +34,11 @@ class LocationList extends Component {
               return lessThan ? -1 : greaterThan ? 1 : 0;
             })
             .map(category => (
-              <LocationsListItem key={category.id} category={category} />
+              <LocationsListItem
+                key={category.id}
+                category={category}
+                onClick={this.props.onCategoryClick}
+              />
             ))}
         </List>
         <AppBar position="fixed" color="default" style={styles.AppBar}>
@@ -60,7 +63,8 @@ class LocationList extends Component {
 
 LocationList.propTypes = {
   categories: PropTypes.array,
-  shouldShowDialog: PropTypes.func.isRequired
+  onCategoryClick: PropTypes.func,
+  shouldShowDialog: PropTypes.func
 };
 
 const styles = {
