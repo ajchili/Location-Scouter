@@ -9,9 +9,11 @@ import {
   MenuItem,
   Select,
   TextField,
+  Tooltip,
   Typography
 } from "@material-ui/core";
-import LocationIcon from "@material-ui/icons/PinDrop";
+import AddLocationIcon from "@material-ui/icons/AddLocation";
+import LocationIcon from "@material-ui/icons/LocationOn";
 import GoogleMapReact from "google-map-react";
 import PropTypes from "prop-types";
 
@@ -26,79 +28,86 @@ const NewLocation = ({
   category,
   onCategoryChange,
   error
-}) => (
-  <div>
+}) => {
+  let categoryData = category && categories.find(a => a.id === category);
+  let color = (categoryData && categoryData.color) || "#000000";
+  return (
+    <div>
+      <AddLocationIcon
+        style={{
+          color,
+          width: iconSize,
+          height: iconSize,
+          marginLeft: -iconSize / 2,
+          marginTop: -iconSize
+        }}
+      />
+      <Card
+        style={{
+          minWidth: 255,
+          marginLeft: iconSize / 2 + 10,
+          marginTop: -iconSize
+        }}
+      >
+        <CardContent>
+          <Typography variant="h5" component="h2">
+            Create New Location
+          </Typography>
+          {error && (
+            <Typography color="secondary" gutterBottom>
+              {error}
+            </Typography>
+          )}
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Location Name"
+            type="text"
+            fullWidth
+            value={name}
+            onChange={onNameChange}
+          />
+          <FormControl style={{ width: "100%" }}>
+            <InputLabel>Category</InputLabel>
+            <Select
+              margin="dense"
+              fullWidth
+              value={category}
+              onChange={onCategoryChange}
+            >
+              {categories.map(category => (
+                <MenuItem key={category.id} value={category.id}>
+                  {category.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </CardContent>
+        <CardActions>
+          <Button color="primary" size="small" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button color="primary" size="small" onClick={onCreate}>
+            Create
+          </Button>
+        </CardActions>
+      </Card>
+    </div>
+  );
+};
+
+const Location = ({ name, color }) => (
+  <Tooltip title={name}>
     <LocationIcon
       style={{
-        width: iconSize,
-        height: iconSize,
+        color: color,
+        width: iconSize / 2,
+        height: iconSize / 2,
         marginLeft: -iconSize / 2,
-        marginTop: -iconSize / 2
-      }}
-    />
-    <Card
-      style={{
-        minWidth: 255,
-        marginLeft: iconSize / 2,
         marginTop: -iconSize
       }}
-    >
-      <CardContent>
-        <Typography variant="h5" component="h2">
-          Create New Location
-        </Typography>
-        {error && (
-          <Typography color="secondary" gutterBottom>
-            {error}
-          </Typography>
-        )}
-        <TextField
-          autoFocus
-          margin="dense"
-          label="Location Name"
-          type="text"
-          fullWidth
-          value={name}
-          onChange={onNameChange}
-        />
-        <FormControl style={{ width: "100%" }}>
-          <InputLabel>Category</InputLabel>
-          <Select
-            margin="dense"
-            fullWidth
-            value={category}
-            onChange={onCategoryChange}
-          >
-            {categories.map(category => (
-              <MenuItem key={category.id} value={category.id}>
-                {category.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </CardContent>
-      <CardActions>
-        <Button color="primary" size="small" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button color="primary" size="small" onClick={onCreate}>
-          Create
-        </Button>
-      </CardActions>
-    </Card>
-  </div>
-);
-
-const Location = ({ color }) => (
-  <LocationIcon
-    style={{
-      color: color,
-      width: iconSize / 2,
-      height: iconSize / 2,
-      marginLeft: -iconSize / 4,
-      marginTop: -iconSize / 4
-    }}
-  />
+    />
+  </Tooltip>
 );
 
 class Map extends Component {
@@ -181,6 +190,7 @@ class Map extends Component {
               return (
                 <Location
                   key={location.id}
+                  name={location.name}
                   color={category.color || "#000000"}
                   lat={location.lat}
                   lng={location.lng}
