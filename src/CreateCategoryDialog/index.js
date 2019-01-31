@@ -8,6 +8,7 @@ import {
   DialogTitle,
   TextField
 } from "@material-ui/core";
+import PropTypes from "prop-types";
 
 class CreateCategoryDialog extends Component {
   state = {
@@ -20,15 +21,15 @@ class CreateCategoryDialog extends Component {
 
   _onClose = () => {
     const { onClose } = this.props;
-    onClose();
-    this.setState({ categoryName: ""});
+    if (onClose) onClose();
+    this.setState({ categoryName: "" });
   };
 
-  _onCreate = () => {
+  _create = () => {
     const { categoryName } = this.state;
     const { onClose } = this.props;
-    onClose(categoryName);
-    this.setState({ categoryName: ""});
+    if (onClose) onClose(categoryName);
+    this.setState({ categoryName: "" });
   };
 
   render() {
@@ -55,7 +56,7 @@ class CreateCategoryDialog extends Component {
           />
         </DialogContent>
         <DialogActions>
-          <Button color="primary" onClick={this._onCreate}>
+          <Button color="primary" onClick={this._create}>
             Create
           </Button>
         </DialogActions>
@@ -63,5 +64,9 @@ class CreateCategoryDialog extends Component {
     );
   }
 }
+
+CreateCategoryDialog.propTypes = {
+  onClose: PropTypes.func
+};
 
 export default CreateCategoryDialog;
