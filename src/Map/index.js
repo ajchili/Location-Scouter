@@ -32,21 +32,19 @@ const NewLocation = ({
   let categoryData = category && categories.find(a => a.id === category);
   let color = (categoryData && categoryData.color) || "#000000";
   return (
-    <div>
+    <div style={{ position: "absolute" }}>
       <AddLocationIcon
         style={{
           color,
           width: iconSize,
           height: iconSize,
-          marginLeft: -iconSize / 2,
-          marginTop: -iconSize
+          transform: "translate(-50%, -100%)"
         }}
       />
       <Card
         style={{
           minWidth: 255,
-          marginLeft: iconSize / 2 + 10,
-          marginTop: -iconSize
+          transform: `translate(${iconSize / 2}px, -50%)`
         }}
       >
         <CardContent>
@@ -97,14 +95,15 @@ const NewLocation = ({
 };
 
 const Location = ({ name, color }) => (
-  <Tooltip title={name}>
+  <Tooltip
+    title={name}
+    style={{ position: "absolute", transform: "translate(-50%, -50%)" }}
+  >
     <LocationIcon
       style={{
         color: color,
         width: iconSize / 2,
-        height: iconSize / 2,
-        marginLeft: -iconSize / 2,
-        marginTop: -iconSize
+        height: iconSize / 2
       }}
     />
   </Tooltip>
