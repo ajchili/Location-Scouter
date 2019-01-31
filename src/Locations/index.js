@@ -98,7 +98,21 @@ class Locations extends Component {
             });
           });
         break;
-      case "obejct":
+      case "object":
+        firebase
+          .firestore()
+          .collection("categories")
+          .doc(value.id)
+          .update({ name: value.name, color: value.color })
+          .then(() => {
+            let { categories } = this.state;
+            let category = categories.find(
+              category => category.id === value.id
+            );
+            category.name = value.name;
+            category.color = value.color;
+            this.setState({ categories });
+          });
         break;
       default:
         break;

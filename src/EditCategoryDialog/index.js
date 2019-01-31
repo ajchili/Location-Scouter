@@ -5,14 +5,17 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormLabel,
   TextField,
   Tooltip
 } from "@material-ui/core";
+import { TwitterPicker } from "react-color";
 import Proptypes from "prop-types";
 
 class EditCategoryDialog extends Component {
   state = {
-    name: ""
+    name: "",
+    color: "#000000"
   };
 
   componentDidMount() {
@@ -25,13 +28,12 @@ class EditCategoryDialog extends Component {
     if (onClose) onClose();
   };
 
-  _handleListItemClicked = value => {
-    const { onClose } = this.props;
-    if (onClose) onClose(value);
-  };
-
   _onNameChanged = e => {
     this.setState({ name: e.target.value });
+  };
+
+  _onColorChanged = color => {
+    this.setState({ color: color.hex });
   };
 
   _save = () => {
@@ -45,7 +47,7 @@ class EditCategoryDialog extends Component {
   };
 
   render() {
-    const { name } = this.state;
+    const { name, color } = this.state;
     const { category, onClose, ...other } = this.props;
 
     return (
@@ -60,6 +62,14 @@ class EditCategoryDialog extends Component {
             fullWidth
             value={name}
             onChange={this._onNameChanged}
+          />
+          <div style={{ paddingTop: 5, paddingBottom: 5 }}>
+            <FormLabel>Category Color</FormLabel>
+          </div>
+          <TwitterPicker
+            triangle="hide"
+            color={color}
+            onChangeComplete={this._onColorChanged}
           />
         </DialogContent>
         <DialogActions>

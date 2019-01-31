@@ -30,10 +30,12 @@ class LocationsListItem extends Component {
     const { open } = this.state;
     const { category } = this.props;
 
+    const color = category.color || "#000000";
+
     return (
       <div>
         <ListItem button onClick={this._onClick}>
-          <CategoryIcon />
+          <CategoryIcon style={{ color }} />
           <ListItemText inset primary={category.name} />
           <div onClick={this._onToggleClick}>
             {open ? <ExpandLess /> : <ExpandMore />}
@@ -43,7 +45,7 @@ class LocationsListItem extends Component {
           <List>
             {category.locations.map(location => (
               <ListItem key={location.id} button style={{ paddingLeft: 30 }}>
-                <LocationIcon />
+                <LocationIcon style={{ color }} />
                 <ListItemText inset primary={location.name} />
               </ListItem>
             ))}
