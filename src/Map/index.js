@@ -114,8 +114,17 @@ class Map extends Component {
   state = {
     newLocationName: "",
     newLocationCategory: "",
-    error: ""
+    error: "",
+    center: null,
+    zoom: 5
   };
+
+  componentWillReceiveProps(props) {
+    const { newLocation } = props;
+    if (newLocation) {
+      this.setState({ center: { lat: newLocation.lat, lng: newLocation.lng } });
+    }
+  }
 
   _onNewLocationNameChange = e => {
     this.setState({ newLocationName: e.target.value });
@@ -157,7 +166,13 @@ class Map extends Component {
   };
 
   render() {
-    const { newLocationName, newLocationCategory, error } = this.state;
+    const {
+      newLocationName,
+      newLocationCategory,
+      error,
+      center,
+      zoom
+    } = this.state;
     const { onClick, newLocation, categories } = this.props;
 
     return (
@@ -170,6 +185,18 @@ class Map extends Component {
             lng: -98.5795
           }}
           defaultZoom={5}
+          center={center}
+          zoom={zoom}
+          onChange={change => {
+            this.setState({ center: change.center, zoom: change.zoom });
+          }}
+          onChildClick={(key, childProps) => {
+            if (newLocation) return;
+            this.setState({
+              center: { lat: childProps.lat, lng: childProps.lng },
+              zoom: 17
+            });
+          }}
         >
           {newLocation && (
             <NewLocation
@@ -185,19 +212,20 @@ class Map extends Component {
               error={error}
             />
           )}
-          {categories.map(category => {
-            return category.locations.map(location => {
-              return (
-                <Location
-                  key={location.id}
-                  name={location.name}
-                  color={category.color || "#000000"}
-                  lat={location.lat}
-                  lng={location.lng}
-                />
-              );
-            });
-          })}
+          {!newLocation &&
+            categories.map(category => {
+              return category.locations.map(location => {
+                return (
+                  <Location
+                    key={location.id}
+                    name={location.name}
+                    color={category.color || "#000000"}
+                    lat={location.lat}
+                    lng={location.lng}
+                  />
+                );
+              });
+            })}
         </GoogleMapReact>
       </div>
     );

@@ -50,7 +50,9 @@ class Locations extends Component {
   }
 
   _onMapClick = coords => {
-    this.setState({ coords });
+    const width = window.innerWidth * 0.75 - 50;
+    const height = window.innerHeight - 128;
+    if (coords.x <= width && coords.y <= height) this.setState({ coords });
   };
 
   _onCategoryClick = id => {
