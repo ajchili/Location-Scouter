@@ -17,7 +17,7 @@ import LocationIcon from "@material-ui/icons/LocationOn";
 import GoogleMapReact from "google-map-react";
 import PropTypes from "prop-types";
 
-const iconSize = 40;
+const iconSize = 50;
 
 const NewLocation = ({
   name,
@@ -194,7 +194,7 @@ class Map extends Component {
             if (newLocation) return;
             this.setState({
               center: { lat: childProps.lat, lng: childProps.lng },
-              zoom: 17
+              zoom: 15
             });
           }}
         >
