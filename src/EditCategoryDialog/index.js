@@ -7,8 +7,6 @@ import {
   DialogTitle,
   TextField
 } from "@material-ui/core";
-import CategoryIcon from "@material-ui/icons/Category";
-import LocationIcon from "@material-ui/icons/PinDrop";
 import Proptypes from "prop-types";
 
 class EditCategoryDialog extends Component {
