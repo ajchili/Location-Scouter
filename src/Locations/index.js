@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import LocationsList from "../LocationsList";
 import Map from "../Map";
-import CreateCategoryDialog from "../CreateCategoryDialog";
+import { CreateCategoryDialog } from "../DialogComponents";
 import EditCategoryDialog from "../EditCategoryDialog";
 import EditLocationDialog from "../EditLocationDialog";
 import firebase from "../firebase";
@@ -79,25 +79,27 @@ class Locations extends Component {
     }
   };
 
-  _onCreateCategoryDialogClosed = value => {
+  _onCreateCategoryDialogClosed = () => {
     this.setState({ createCategoryDialogOpen: false });
-    if (value) {
-      let user = firebase.auth().currentUser;
-      if (user) {
-        let data = {
-          owner: user.uid,
-          name: value
-        };
-        firebase
-          .firestore()
-          .collection("categories")
-          .add(data)
-          .then(documentRef => {
-            let { categories } = this.state;
-            categories.push({ id: documentRef.id, ...data, locations: [] });
-            this.setState({ categories });
-          });
-      }
+  };
+
+  _createCategory = name => {
+    this.setState({ createCategoryDialogOpen: false });
+    let user = firebase.auth().currentUser;
+    if (user) {
+      let data = {
+        owner: user.uid,
+        name
+      };
+      firebase
+        .firestore()
+        .collection("categories")
+        .add(data)
+        .then(documentRef => {
+          let { categories } = this.state;
+          categories.push({ id: documentRef.id, ...data, locations: [] });
+          this.setState({ categories });
+        });
     }
   };
 
@@ -240,6 +242,7 @@ class Locations extends Component {
         <CreateCategoryDialog
           open={createCategoryDialogOpen}
           onClose={this._onCreateCategoryDialogClosed}
+          onCreate={this._createCategory}
         />
         {editCategory && (
           <EditCategoryDialog
