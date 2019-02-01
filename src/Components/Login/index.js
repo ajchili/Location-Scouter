@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import firebase, { provider } from "../firebase";
+import firebase, { provider } from "../../firebase";
 import { Button, Card, Typography } from "@material-ui/core";
 
 class Login extends Component {

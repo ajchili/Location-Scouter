@@ -8,7 +8,7 @@ import {
   Typography
 } from "@material-ui/core";
 import AccountCircle from "@material-ui/icons/AccountCircle";
-import firebase from "../firebase";
+import firebase from "../../firebase";
 
 class Navbar extends Component<any, any> {
   constructor(props: any) {

@@ -4,7 +4,7 @@ import Map from "../Map";
 import { CreateCategoryDialog } from "../DialogComponents";
 import EditCategoryDialog from "../EditCategoryDialog";
 import EditLocationDialog from "../EditLocationDialog";
-import firebase from "../firebase";
+import firebase from "../../firebase";
 
 class Locations extends Component {
   state = {

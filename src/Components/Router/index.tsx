@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { BrowserRouter as Router, Route } from "react-router-dom";
 import { CircularProgress, Typography } from "@material-ui/core";
-import firebase from "../firebase";
+import firebase from "../../firebase";
 import Login from "../Login";
 import Navbar from "../Navbar";
 import Locations from "../Locations";
