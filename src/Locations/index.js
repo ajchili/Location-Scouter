@@ -3,15 +3,18 @@ import LocationsList from "../LocationsList";
 import Map from "../Map";
 import CreateCategoryDialog from "../CreateCategoryDialog";
 import EditCategoryDialog from "../EditCategoryDialog";
+import EditLocationDialog from "../EditLocationDialog";
 import firebase from "../firebase";
 
 class Locations extends Component {
   state = {
     createCategoryDialogOpen: false,
     editCategoryDialogOpen: false,
+    editLocationDialogOpen: false,
     coords: null,
     categories: [],
-    editCategory: false
+    editCategory: false,
+    editLocation: false
   };
 
   componentDidMount() {
@@ -63,6 +66,17 @@ class Locations extends Component {
 
   _onCategoryClick = id => {
     this.setState({ editCategory: id, editCategoryDialogOpen: true });
+  };
+
+  _onLocationClick = (categoryId, id) => {
+    const { categories } = this.state;
+    let category = categories.find(category => category.id === categoryId);
+    if (category) {
+      let location = category.locations.find(location => location.id === id);
+      if (location) {
+        this.setState({ editLocationDialogOpen: true, editLocation: location });
+      }
+    }
   };
 
   _onCreateCategoryDialogClosed = value => {
@@ -155,6 +169,55 @@ class Locations extends Component {
     this.setState({ coords: null });
   };
 
+  _onEditLocationDialogClosed = value => {
+    const { categories, editLocation } = this.state;
+    this.setState({ editLocation: false, editLocationDialogOpen: false });
+    switch (typeof value) {
+      case "string":
+        firebase
+          .firestore()
+          .collection("locations")
+          .doc(editLocation.id)
+          .delete()
+          .then(() => {
+            let category = categories.find(
+              category => category.id === editLocation.category
+            );
+            category.locations = category.locations.filter(
+              location => location.id !== editLocation.id
+            );
+            this.setState({ categories });
+          });
+        break;
+      case "object":
+        let category = categories.find(
+          category => category.id === editLocation.category
+        );
+        category.locations = category.locations.filter(
+          location => location.id !== editLocation.id
+        );
+        let location = category.locations.find(
+          location => location.id === editLocation.id
+        );
+        location = JSON.parse(JSON.stringify(value));
+        delete value.id;
+        categories
+          .find(category => category.id === location.category)
+          .locations.push(location);
+        firebase
+          .firestore()
+          .collection("locations")
+          .doc(editLocation.id)
+          .set(value)
+          .then(() => {
+            this.setState({ categories });
+          });
+        break;
+      default:
+        break;
+    }
+  };
+
   _shouldShowDialog = dialogName => {
     if (dialogName === "category") {
       this.setState({ createCategoryDialogOpen: true });
@@ -165,9 +228,11 @@ class Locations extends Component {
     const {
       createCategoryDialogOpen,
       editCategoryDialogOpen,
+      editLocationDialogOpen,
       coords,
       categories,
-      editCategory
+      editCategory,
+      editLocation
     } = this.state;
 
     return (
@@ -183,6 +248,14 @@ class Locations extends Component {
             category={categories.find(category => category.id === editCategory)}
           />
         )}
+        {editLocation && (
+          <EditLocationDialog
+            open={editLocationDialogOpen}
+            onClose={this._onEditLocationDialogClosed}
+            location={editLocation}
+            categories={categories}
+          />
+        )}
         <div style={styles.map}>
           <Map
             onClick={this._onMapClick}
@@ -196,6 +269,7 @@ class Locations extends Component {
           <LocationsList
             categories={categories}
             onCategoryClick={this._onCategoryClick}
+            onLocationClick={this._onLocationClick}
             shouldShowDialog={this._shouldShowDialog}
           />
         </div>

@@ -14,10 +14,15 @@ class LocationsListItem extends Component {
     toggling: false
   };
 
-  _onClick = () => {
-    const { category, onClick } = this.props;
+  _onCategoryClick = () => {
+    const { category, onCategoryClick } = this.props;
     if (toggling) return (toggling = false);
-    if (onClick) onClick(category.id);
+    if (onCategoryClick) onCategoryClick(category.id);
+  };
+
+  _onLocationClick = id => {
+    const { category, onLocationClick } = this.props;
+    if (onLocationClick) onLocationClick(category.id, id);
   };
 
   _onToggleClick = () => {
@@ -34,9 +39,14 @@ class LocationsListItem extends Component {
 
     return (
       <div>
-        <ListItem button onClick={this._onClick}>
+        <ListItem button onClick={this._onCategoryClick}>
           <CategoryIcon style={{ color }} />
-          <ListItemText inset primary={category.name} secondary={category.text} />
+          <ListItemText
+            inset
+            primary={category.name}
+            secondary={category.text}
+            style={{ wordBreak: "break-all" }}
+          />
           {!!category.locations.length && (
             <div onClick={this._onToggleClick}>
               {open ? <ExpandLess /> : <ExpandMore />}
@@ -45,12 +55,28 @@ class LocationsListItem extends Component {
         </ListItem>
         <Collapse in={open} timeout="auto" unmountOnExit>
           <List>
-            {category.locations.map(location => (
-              <ListItem key={location.id} button style={{ paddingLeft: 30 }}>
-                <LocationIcon style={{ color }} />
-                <ListItemText inset primary={location.name} />
-              </ListItem>
-            ))}
+            {category.locations
+              .sort((a, b) => {
+                let lessThan = a.name.toLowerCase() < b.name.toLowerCase();
+                let greaterThan = a.name.toLowerCase() > b.name.toLowerCase();
+                return lessThan ? -1 : greaterThan ? 1 : 0;
+              })
+              .map(location => (
+                <ListItem
+                  key={location.id}
+                  button
+                  style={{ paddingLeft: 30 }}
+                  onClick={() => this._onLocationClick(location.id)}
+                >
+                  <LocationIcon style={{ color }} />
+                  <ListItemText
+                    inset
+                    primary={location.name}
+                    secondary={location.text}
+                    style={{ wordBreak: "break-all" }}
+                  />
+                </ListItem>
+              ))}
           </List>
         </Collapse>
       </div>
@@ -60,7 +86,8 @@ class LocationsListItem extends Component {
 
 LocationsListItem.propTypes = {
   category: PropTypes.object.isRequired,
-  onClick: PropTypes.func
+  onCategoryClick: PropTypes.func,
+  onLocationClick: PropTypes.func
 };
 
 export default LocationsListItem;

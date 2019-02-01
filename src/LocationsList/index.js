@@ -37,7 +37,8 @@ class LocationList extends Component {
               <LocationsListItem
                 key={category.id}
                 category={category}
-                onClick={this.props.onCategoryClick}
+                onCategoryClick={this.props.onCategoryClick}
+                onLocationClick={this.props.onLocationClick}
               />
             ))}
         </List>
@@ -64,6 +65,7 @@ class LocationList extends Component {
 LocationList.propTypes = {
   categories: PropTypes.array,
   onCategoryClick: PropTypes.func,
+  onLocationClick: PropTypes.func,
   shouldShowDialog: PropTypes.func
 };
 
