@@ -1,7 +1,7 @@
-import React, { Component } from "react";
+import React, {Component} from "react";
 import GoogleMapReact from "google-map-react";
 import PropTypes from "prop-types";
-import { Location, NewLocation } from "../MapComponents";
+import {Location, NewLocation} from "../MapComponents";
 
 class Map extends Component {
   state = {
@@ -13,18 +13,31 @@ class Map extends Component {
   };
 
   componentWillReceiveProps(props) {
-    const { newLocation } = props;
+    const {newLocation} = props;
     if (newLocation) {
-      this.setState({ center: { lat: newLocation.lat, lng: newLocation.lng } });
+      this.setState({center: {lat: newLocation.lat, lng: newLocation.lng}});
     }
   }
 
-  _onNewLocationNameChange = e => {
-    this.setState({ newLocationName: e.target.value });
+  _onChange = change => {
+    this.setState({center: change.center, zoom: change.zoom});
   };
 
-  _onNewLocationCategoryChange = e => {
-    this.setState({ newLocationCategory: e.target.value });
+  _onChildClick = (key, childProps) => {
+    const {newLocation, zoom} = this.state;
+    if (newLocation) return;
+    this.setState({
+      center: {lat: childProps.lat, lng: childProps.lng},
+      zoom: zoom >= 15 ? zoom : 15
+    });
+  };
+
+  _onNewLocationNameChange = name => {
+    this.setState({newLocationName: name});
+  };
+
+  _onNewLocationCategoryChange = id => {
+    this.setState({newLocationCategory: id});
   };
 
   _reset = () => {
@@ -36,7 +49,7 @@ class Map extends Component {
   };
 
   _cancel = () => {
-    const { onCreateNewLocationCanceled } = this.props;
+    const {onCreateNewLocationCanceled} = this.props;
     if (onCreateNewLocationCanceled) {
       onCreateNewLocationCanceled();
       this._reset();
@@ -44,8 +57,8 @@ class Map extends Component {
   };
 
   _create = () => {
-    const { newLocationName, newLocationCategory } = this.state;
-    const { onCreateNewLocation } = this.props;
+    const {newLocationName, newLocationCategory} = this.state;
+    const {onCreateNewLocation} = this.props;
     if (onCreateNewLocation) {
       if (newLocationName.length && newLocationCategory.length) {
         onCreateNewLocation(newLocationName, newLocationCategory);
@@ -66,13 +79,13 @@ class Map extends Component {
       center,
       zoom
     } = this.state;
-    const { onClick, newLocation, categories } = this.props;
+    const {onClick, newLocation, categories} = this.props;
 
     return (
       <div style={styles.fill}>
         <GoogleMapReact
           onClick={newLocation ? null : onClick}
-          bootstrapURLKeys={{ key: process.env.REACT_APP_GOOGLE_MAPS_KEY }}
+          bootstrapURLKeys={{key: process.env.REACT_APP_GOOGLE_MAPS_KEY}}
           defaultCenter={{
             lat: 39.8283,
             lng: -98.5795
@@ -80,16 +93,8 @@ class Map extends Component {
           defaultZoom={5}
           center={center}
           zoom={zoom}
-          onChange={change => {
-            this.setState({ center: change.center, zoom: change.zoom });
-          }}
-          onChildClick={(key, childProps) => {
-            if (newLocation) return;
-            this.setState({
-              center: { lat: childProps.lat, lng: childProps.lng },
-              zoom: zoom >= 15 ? zoom : 15
-            });
-          }}
+          onChange={this._onChange}
+          onChildClick={this._onChildClick}
         >
           {newLocation && (
             <NewLocation
@@ -106,19 +111,19 @@ class Map extends Component {
             />
           )}
           {!newLocation &&
-            categories.map(category => {
-              return category.locations.map(location => {
-                return (
-                  <Location
-                    key={location.id}
-                    name={location.name}
-                    color={category.color || "#000000"}
-                    lat={location.lat}
-                    lng={location.lng}
-                  />
-                );
-              });
-            })}
+          categories.map(category => {
+            return category.locations.map(location => {
+              return (
+                <Location
+                  key={location.id}
+                  name={location.name}
+                  color={category.color || "#000000"}
+                  lat={location.lat}
+                  lng={location.lng}
+                />
+              );
+            });
+          })}
         </GoogleMapReact>
       </div>
     );
