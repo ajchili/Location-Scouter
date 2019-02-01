@@ -1,17 +1,19 @@
 import React, { Component } from "react";
 import { BrowserRouter as Router, Route } from "react-router-dom";
-import firebase from "../firebase";
 import { CircularProgress, Typography } from "@material-ui/core";
+import firebase from "../firebase";
 import Login from "../Login";
 import Navbar from "../Navbar";
 import Locations from "../Locations";
-import "./Router.css";
 
-export default class extends Component {
-  state = {
-    hasLoaded: false,
-    authenticated: false
-  };
+export default class extends Component<any, any> {
+  constructor(props: any) {
+    super(props);
+    this.state = {
+      hasLoaded: false,
+      authenticated: false
+    }
+  }
 
   componentDidMount() {
     firebase.auth().onAuthStateChanged(user => {
@@ -32,7 +34,7 @@ export default class extends Component {
               <Router>
                 <div>
                   <Navbar />
-                  <div className="content">
+                  <div style={{ paddingTop: 64 }}>
                     <Route exact path="/" component={Locations} />
                   </div>
                 </div>
