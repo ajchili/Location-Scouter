@@ -95,15 +95,13 @@ const NewLocation = ({
 };
 
 const Location = ({ name, color }) => (
-  <Tooltip
-    title={name}
-    style={{ position: "absolute", transform: "translate(-50%, -50%)" }}
-  >
+  <Tooltip title={name}>
     <LocationIcon
       style={{
         color: color,
         width: iconSize / 2,
-        height: iconSize / 2
+        height: iconSize / 2,
+        transform: "translate(-50%, -100%)"
       }}
     />
   </Tooltip>
