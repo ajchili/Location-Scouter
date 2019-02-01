@@ -191,7 +191,7 @@ class Map extends Component {
             if (newLocation) return;
             this.setState({
               center: { lat: childProps.lat, lng: childProps.lng },
-              zoom: 15
+              zoom: zoom >= 15 ? zoom : 15
             });
           }}
         >
