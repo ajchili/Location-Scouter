@@ -9,14 +9,14 @@ import {
 } from "@material-ui/core";
 import AccountCircle from "@material-ui/icons/AccountCircle";
 import firebase from "../firebase";
-import "./Navbar.css";
 
-export default class extends Component {
-  state = {
-    accountMenuEl: null
-  };
+class Navbar extends Component<any, any> {
+  constructor(props: any) {
+    super(props);
+    this.state = { accountMenuEl: null };
+  }
 
-  _handleMenu = event => {
+  _handleMenu = (event: any) => {
     this.setState({ accountMenuEl: event.currentTarget });
   };
 
@@ -27,7 +27,7 @@ export default class extends Component {
   _logout = () => {
     this._handleClose();
     firebase.auth().signOut();
-  }
+  };
 
   render() {
     const { accountMenuEl } = this.state;
@@ -36,7 +36,7 @@ export default class extends Component {
     return (
       <AppBar position="fixed" color="default">
         <Toolbar>
-          <Typography variant="h6" color="inherit" className="grow">
+          <Typography variant="h6" color="inherit" style={styles.grow}>
             Location Scouter
           </Typography>
           <IconButton
@@ -68,3 +68,11 @@ export default class extends Component {
     );
   }
 }
+
+const styles: any = {
+  grow: {
+    flexGrow: 1
+  }
+};
+
+export default Navbar;
