@@ -35,8 +35,4 @@ Finally, you will now need the Firebase configuration. This can be obtained by:
 
 ### Running locally
 
-1. Open one terminal and run `yarn build`
-2. Within another terminal run `firebase serve --only hosting`
-3. Open [localhost:5000](localhost:5000) within your browser
-4. Make changes and run `yarn build` with every new change before refreshing
-   your browser
+Run `yarn dev`
