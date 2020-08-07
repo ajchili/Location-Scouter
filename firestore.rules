@@ -1,0 +1,19 @@
+service cloud.firestore {
+  match /databases/{database}/documents {
+  	function isOwnerOfLocation(category) {
+    	return request.auth.uid == get(/databases/$(database)/documents/categories/$(category)).data.owner;
+    }
+  	
+    match /categories/{category} {
+    	allow read: if request.auth.uid == resource.data.owner;
+      allow write: if request.auth.uid == resource.data.owner;
+      allow create: if request.auth != null;
+    }
+    
+    match /locations/{location} {
+      allow read: if isOwnerOfLocation(resource.data.category);
+      allow write: if isOwnerOfLocation(resource.data.category);
+      allow create: if request.auth != null;
+    }
+  }
+}
