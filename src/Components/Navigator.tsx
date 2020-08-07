@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Switch } from 'react-router-dom';
 import firebase from 'firebase';
+import { Loading as LoadingPage } from '../Pages';
 
 export interface Props {}
 
@@ -37,10 +38,14 @@ export class Navigator extends Component<Props, State> {
   }
 
   render() {
-    return (
+    const { initialAuthCheckCompleted } = this.state;
+
+    return initialAuthCheckCompleted ? (
       <Router>
         <Switch></Switch>
       </Router>
+    ) : (
+      <LoadingPage />
     );
   }
 }
