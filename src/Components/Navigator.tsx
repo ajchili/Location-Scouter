@@ -1,7 +1,11 @@
 import React, { Component } from 'react';
-import { BrowserRouter as Router, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import firebase from 'firebase';
-import { Loading as LoadingPage } from '../Pages';
+import {
+  Lander as LandingPage,
+  Loading as LoadingPage,
+  Login as LoginPage,
+} from '../Pages';
 
 export interface Props {}
 
@@ -38,11 +42,26 @@ export class Navigator extends Component<Props, State> {
   }
 
   render() {
-    const { initialAuthCheckCompleted } = this.state;
+    const { initialAuthCheckCompleted, user } = this.state;
 
     return initialAuthCheckCompleted ? (
       <Router>
-        <Switch></Switch>
+        <Switch>
+          {user === null ? (
+            <>
+              <Route exact path="/" component={LandingPage} />
+              <Route exact path="/login" component={LoginPage} />
+            </>
+          ) : (
+            <p
+              onClick={() => {
+                firebase.auth().signOut();
+              }}
+            >
+              Authenticated
+            </p>
+          )}
+        </Switch>
       </Router>
     ) : (
       <LoadingPage />
