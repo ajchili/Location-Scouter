@@ -5,6 +5,7 @@ import {
   Lander as LandingPage,
   Loading as LoadingPage,
   Login as LoginPage,
+  Scouting as ScoutingPage,
 } from '../Pages';
 
 export interface Props {}
@@ -53,13 +54,9 @@ export class Navigator extends Component<Props, State> {
               <Route exact path="/login" component={LoginPage} />
             </>
           ) : (
-            <p
-              onClick={() => {
-                firebase.auth().signOut();
-              }}
-            >
-              Authenticated
-            </p>
+            <>
+              <Route exact path="/" component={ScoutingPage} />
+            </>
           )}
         </Switch>
       </Router>
