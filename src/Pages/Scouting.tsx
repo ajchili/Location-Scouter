@@ -2,7 +2,9 @@ import React, { Component } from 'react';
 import { AppBar, Button, Grid, Toolbar, Typography } from '@material-ui/core';
 import firebase from 'firebase/app';
 import 'firebase/auth';
-import GoogleMapReact from 'google-map-react';
+import 'firebase/firestore';
+import { ClickEventValue } from 'google-map-react';
+import { Map } from '../Components';
 
 export interface Props {}
 
@@ -18,8 +20,42 @@ export class Scouting extends Component<Props, State> {
     };
   }
 
+  componentDidMount() {
+    this.loadLocations();
+  }
+
   get GoogleMapsAPIKey(): string {
     return process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
+  }
+
+  addLocation = async (event: ClickEventValue): Promise<void> => {
+    const { uid } = firebase.auth().currentUser!;
+    const { lat, lng } = event;
+    const doc = await firebase.firestore().collection('locations').add({
+      owner: uid,
+      lat,
+      lng,
+    });
+    const { locations } = this.state;
+    this.setState({ locations: [{ id: doc.id, lat, lng }].concat(locations) });
+  };
+
+  async loadLocations(): Promise<void> {
+    const { uid } = firebase.auth().currentUser!;
+    const query = await firebase
+      .firestore()
+      .collection('locations')
+      .where('owner', '==', uid)
+      .get();
+    this.setState({
+      locations: query.docs.map((doc) => {
+        return {
+          id: doc.id,
+          lat: doc.data().lat,
+          lng: doc.data().lng,
+        };
+      }),
+    });
   }
 
   logout(): void {
@@ -27,6 +63,7 @@ export class Scouting extends Component<Props, State> {
   }
 
   render() {
+    const { locations } = this.state;
     return (
       <Grid
         container
@@ -52,42 +89,13 @@ export class Scouting extends Component<Props, State> {
             style={{ maxWidth: '100%', height: '100%' }}
           >
             <Grid item xs={9}>
-              <GoogleMapReact
-                bootstrapURLKeys={{ key: this.GoogleMapsAPIKey }}
-                defaultCenter={{
-                  lat: parseFloat(window.localStorage.getItem('mapLat') || '0'),
-                  lng: parseFloat(window.localStorage.getItem('mapLng') || '0'),
-                }}
-                defaultZoom={parseInt(
-                  window.localStorage.getItem('mapDefaultZoom') || '0',
-                  10
-                )}
-                yesIWantToUseGoogleMapApiInternals
-                onClick={(e) => {
-                  this.setState({
-                    locations: [e].concat(...this.state.locations),
-                  });
-                }}
-                onMapTypeIdChange={(mapTypeId) =>
-                  window.localStorage.setItem('mapTypeId', mapTypeId)
-                }
-                onDrag={(map: any) => {
-                  const { center } = map;
-                  window.localStorage.setItem('mapLat', center.lat());
-                  window.localStorage.setItem('mapLng', center.lng());
-                }}
-                onZoomAnimationEnd={(zoom) =>
-                  window.localStorage.setItem('mapDefaultZoom', zoom)
-                }
-                options={{
-                  mapTypeId:
-                    window.localStorage.getItem('mapTypeId') || 'hybrid',
-                  mapTypeControl: true,
-                  streetViewControl: true,
-                }}
-              />
+              <Map locations={locations} onClick={this.addLocation} />
             </Grid>
-            <Grid item xs={3}></Grid>
+            <Grid item xs={3}>
+              {locations.map((location) => (
+                <Typography key={location.id}>{location.id}</Typography>
+              ))}
+            </Grid>
           </Grid>
         </Grid>
       </Grid>
