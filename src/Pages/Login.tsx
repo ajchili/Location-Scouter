@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import firebase from 'firebase';
-import { Button, Flex } from '@chakra-ui/core';
 
 export class Login extends Component {
   async login() {
@@ -16,15 +15,9 @@ export class Login extends Component {
 
   render() {
     return (
-      <Flex
-        align="center"
-        direction="column"
-        justifyContent="center"
-        w="100%"
-        h="100vh"
-      >
-        <Button onClick={this.login}>Sign in with Google</Button>
-      </Flex>
+      <div>
+        <button onClick={this.login}>Login</button>
+      </div>
     );
   }
 }

@@ -1,19 +1,34 @@
 import React, { Component } from 'react';
-import { CircularProgress, Flex, Text } from '@chakra-ui/core';
+import { CircularProgress, Grid, Paper, Typography } from '@material-ui/core';
 
 export class Loading extends Component {
   render() {
     return (
-      <Flex
-        align="center"
-        direction="column"
-        justifyContent="center"
-        w="100%"
-        h="100vh"
+      <Grid
+        container
+        direction="row"
+        justify="center"
+        alignItems="center"
+        style={{ height: '100%' }}
       >
-        <CircularProgress isIndeterminate></CircularProgress>
-        <Text fontSize="xl">Loading Location Scouter</Text>
-      </Flex>
+        <Grid item>
+          <Paper elevation={3} variant="outlined" style={{ padding: 20 }}>
+            <Grid
+              container
+              direction="column"
+              justify="center"
+              alignItems="center"
+            >
+              <Grid item>
+                <CircularProgress></CircularProgress>
+              </Grid>
+              <Grid item>
+                <Typography>Loading Location Scouter...</Typography>
+              </Grid>
+            </Grid>
+          </Paper>
+        </Grid>
+      </Grid>
     );
   }
 }
