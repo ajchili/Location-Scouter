@@ -1,4 +1,7 @@
 import React, { Component } from 'react';
+import firebase from 'firebase/app';
+import 'firebase/auth';
+import 'firebase/firestore';
 import GoogleMapReact, { ClickEventValue } from 'google-map-react';
 import { MapIcon } from '../Components';
 
@@ -9,6 +12,7 @@ export interface Props {
 
 export interface State {
   creatingNewLocation: boolean;
+  canUseMap: boolean;
 }
 
 export class Map extends Component<Props, State> {
@@ -16,8 +20,38 @@ export class Map extends Component<Props, State> {
     super(props);
     this.state = {
       creatingNewLocation: false,
+      canUseMap: true,
     };
   }
+
+  logUsage = async (): Promise<void> => {
+    const { uid } = firebase.auth().currentUser!;
+    const date = new Date();
+    const quotaPeriod = `map#${date.getFullYear()}-${date.getMonth()}`;
+    const docReference = firebase.firestore().collection('quotas').doc(uid);
+    try {
+      const usage = await firebase.firestore().runTransaction(
+        async (transaction): Promise<any> => {
+          const doc = await transaction.get(docReference);
+          if (!doc.exists) {
+            transaction.set(docReference, { [quotaPeriod]: 1 });
+            return 1;
+          } else {
+            const data = doc.data() || {};
+            const currentQuotaUsage = isNaN(data[quotaPeriod])
+              ? 1
+              : data[quotaPeriod];
+            const newQuotaUsage = currentQuotaUsage + 1;
+            transaction.update(docReference, { [quotaPeriod]: newQuotaUsage });
+            return newQuotaUsage;
+          }
+        }
+      );
+      console.log(usage);
+    } catch (err) {
+      this.setState({ canUseMap: false });
+    }
+  };
 
   private get GoogleMapsAPIKey(): string {
     return process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
@@ -38,6 +72,7 @@ export class Map extends Component<Props, State> {
         )}
         yesIWantToUseGoogleMapApiInternals
         onClick={onClick}
+        onGoogleApiLoaded={this.logUsage}
         onMapTypeIdChange={(mapTypeId) =>
           window.localStorage.setItem('mapTypeId', mapTypeId)
         }
