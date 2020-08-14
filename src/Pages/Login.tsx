@@ -7,6 +7,7 @@ export class Login extends Component {
     const provider = new firebase.auth.GoogleAuthProvider();
     try {
       await firebase.auth().signInWithPopup(provider);
+      window.location.replace('/');
     } catch (error) {
       const { code, credential, email, message } = error;
       // TODO: Display error
