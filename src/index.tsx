@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import firebase from 'firebase/app';
 import 'firebase/auth';
+import 'firebase/firestore';
 import { Navigator } from './Components';
 
 firebase.initializeApp({
@@ -13,10 +14,14 @@ firebase.initializeApp({
   messagingSenderId: process.env.REACT_APP_MESSAGE_SENDER_ID,
   appId: process.env.REACT_APP_APP_ID,
 });
-
-ReactDOM.render(
-  <React.StrictMode>
-    <Navigator />
-  </React.StrictMode>,
-  document.getElementById('root')
-);
+firebase
+  .firestore()
+  .enablePersistence({ synchronizeTabs: true })
+  .finally(() => {
+    ReactDOM.render(
+      <React.StrictMode>
+        <Navigator />
+      </React.StrictMode>,
+      document.getElementById('root')
+    );
+  });

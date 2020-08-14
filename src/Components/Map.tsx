@@ -2,26 +2,48 @@ import React, { Component } from 'react';
 import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
-import GoogleMapReact, { ClickEventValue } from 'google-map-react';
+import GoogleMapReact, { ClickEventValue, Coords } from 'google-map-react';
 import { MapIcon } from '../Components';
 
 export interface Props {
+  center?: Coords;
   locations: any[];
+  onCenterUpdated: () => void;
   onClick?: (event: ClickEventValue) => void;
 }
 
 export interface State {
+  center?: Coords;
   creatingNewLocation: boolean;
   canUseMap: boolean;
 }
+
+const defaultCenter: Coords = {
+  lat: parseFloat(window.localStorage.getItem('mapLat') || '0'),
+  lng: parseFloat(window.localStorage.getItem('mapLng') || '0'),
+};
+const defaultZoom: number = parseInt(
+  window.localStorage.getItem('mapDefaultZoom') || '0',
+  10
+);
 
 export class Map extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
+      center: props.center,
       creatingNewLocation: false,
       canUseMap: true,
     };
+  }
+
+  componentDidUpdate() {
+    const { center: newCenter, onCenterUpdated } = this.props;
+    const { center } = this.state;
+    if (newCenter !== undefined && newCenter !== center) {
+      this.setState({ center: newCenter });
+      onCenterUpdated();
+    }
   }
 
   logUsage = async (): Promise<void> => {
@@ -59,25 +81,26 @@ export class Map extends Component<Props, State> {
 
   render() {
     const { locations, onClick } = this.props;
+    const { center } = this.state;
     return (
       <GoogleMapReact
         bootstrapURLKeys={{ key: this.GoogleMapsAPIKey }}
-        defaultCenter={{
-          lat: parseFloat(window.localStorage.getItem('mapLat') || '0'),
-          lng: parseFloat(window.localStorage.getItem('mapLng') || '0'),
-        }}
-        defaultZoom={parseInt(
-          window.localStorage.getItem('mapDefaultZoom') || '0',
-          10
-        )}
-        yesIWantToUseGoogleMapApiInternals
+        center={center}
+        defaultCenter={defaultCenter}
+        defaultZoom={defaultZoom}
         onClick={onClick}
         onGoogleApiLoaded={this.logUsage}
         onMapTypeIdChange={(mapTypeId) =>
           window.localStorage.setItem('mapTypeId', mapTypeId)
         }
-        onDrag={(map: any) => {
+        onDragEnd={(map: any) => {
           const { center } = map;
+          this.setState({
+            center: {
+              lat: center.lat(),
+              lng: center.lng(),
+            },
+          });
           window.localStorage.setItem('mapLat', center.lat());
           window.localStorage.setItem('mapLng', center.lng());
         }}
@@ -89,15 +112,22 @@ export class Map extends Component<Props, State> {
           mapTypeControl: true,
           streetViewControl: true,
         }}
+        yesIWantToUseGoogleMapApiInternals
       >
         {locations.map((location) => (
           <MapIcon
             key={location.id}
             lat={location.lat}
             lng={location.lng}
-            onClick={() => console.log('Clicked', location.id)}
+            onClick={() => {
+              console.log('Clicked', location.id);
+              this.setState({
+                center: { lat: location.lat, lng: location.lng },
+              });
+            }}
           />
         ))}
+        {this.props.children}
       </GoogleMapReact>
     );
   }

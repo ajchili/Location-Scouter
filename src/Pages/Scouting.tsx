@@ -3,12 +3,15 @@ import { AppBar, Button, Grid, Toolbar, Typography } from '@material-ui/core';
 import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
-import { ClickEventValue } from 'google-map-react';
-import { Map } from '../Components';
+import { ClickEventValue, Coords } from 'google-map-react';
+import { CreateMapElement, Map } from '../Components';
+import { create } from 'domain';
 
 export interface Props {}
 
 export interface State {
+  center?: Coords;
+  createMapElement?: Coords;
   locations: any[];
 }
 
@@ -24,20 +27,36 @@ export class Scouting extends Component<Props, State> {
     this.loadLocations();
   }
 
-  get GoogleMapsAPIKey(): string {
-    return process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
-  }
-
-  addLocation = async (event: ClickEventValue): Promise<void> => {
-    const { uid } = firebase.auth().currentUser!;
+  createElement = (event: ClickEventValue): void => {
+    const { createMapElement } = this.state;
+    if (createMapElement !== undefined) {
+      return;
+    }
     const { lat, lng } = event;
-    const doc = await firebase.firestore().collection('locations').add({
-      owner: uid,
+    const coords = { lat, lng };
+    this.setState({ center: coords, createMapElement: coords });
+  };
+
+  addLocation = async (name: string): Promise<void> => {
+    const { createMapElement } = this.state;
+    if (createMapElement === undefined) {
+      return;
+    }
+    const { uid } = firebase.auth().currentUser!;
+    const { lat, lng } = createMapElement;
+    const data = {
       lat,
       lng,
-    });
+      name,
+      owner: uid,
+    };
+    const doc = await firebase.firestore().collection('locations').add(data);
     const { locations } = this.state;
-    this.setState({ locations: [{ id: doc.id, lat, lng }].concat(locations) });
+    this.setState({
+      center: undefined,
+      createMapElement: undefined,
+      locations: [{ id: doc.id, ...data }].concat(locations),
+    });
   };
 
   async loadLocations(): Promise<void> {
@@ -51,8 +70,7 @@ export class Scouting extends Component<Props, State> {
       locations: query.docs.map((doc) => {
         return {
           id: doc.id,
-          lat: doc.data().lat,
-          lng: doc.data().lng,
+          ...doc.data(),
         };
       }),
     });
@@ -63,7 +81,7 @@ export class Scouting extends Component<Props, State> {
   }
 
   render() {
-    const { locations } = this.state;
+    const { center, createMapElement, locations } = this.state;
     return (
       <Grid
         container
@@ -89,11 +107,41 @@ export class Scouting extends Component<Props, State> {
             style={{ maxWidth: '100%', height: '100%' }}
           >
             <Grid item xs={9}>
-              <Map locations={locations} onClick={this.addLocation} />
+              <Map
+                center={center}
+                locations={locations}
+                onClick={this.createElement}
+                onCenterUpdated={() => {
+                  if (center !== undefined && createMapElement === undefined) {
+                    this.setState({ center: undefined });
+                  }
+                }}
+                children={
+                  createMapElement && (
+                    <CreateMapElement
+                      lat={createMapElement.lat}
+                      lng={createMapElement.lng}
+                      onCancel={() => {
+                        this.setState({ createMapElement: undefined });
+                      }}
+                      onCreate={this.addLocation}
+                    />
+                  )
+                }
+              />
             </Grid>
             <Grid item xs={3}>
               {locations.map((location) => (
-                <Typography key={location.id}>{location.id}</Typography>
+                <Typography
+                  key={location.id}
+                  onClick={() =>
+                    this.setState({
+                      center: { lat: location.lat, lng: location.lng },
+                    })
+                  }
+                >
+                  {location.name || location.id}
+                </Typography>
               ))}
             </Grid>
           </Grid>

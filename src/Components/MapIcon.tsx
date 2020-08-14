@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 import { colors } from '@material-ui/core';
 import LocationOnIcon from '@material-ui/icons/LocationOn';
+import { BasicMapComponentProps } from '../lib/types';
 
-export interface Props {
+export interface Props extends BasicMapComponentProps {
   color?: string;
   highlighted?: boolean;
-  lat: number;
-  lng: number;
   onClick?: () => void;
   size?: number;
 }
@@ -27,7 +26,10 @@ export class MapIcon extends Component<Props> {
           cursor: 'pointer',
           zIndex: highlighted ? Number.MAX_SAFE_INTEGER : 'inherit',
         }}
-        onClick={() => onClick()}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick();
+        }}
       >
         <LocationOnIcon
           style={{
