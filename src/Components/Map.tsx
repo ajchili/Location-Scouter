@@ -110,7 +110,6 @@ export class Map extends Component<Props, State> {
         options={{
           mapTypeId: window.localStorage.getItem('mapTypeId') || 'hybrid',
           mapTypeControl: true,
-          streetViewControl: true,
         }}
         yesIWantToUseGoogleMapApiInternals
       >

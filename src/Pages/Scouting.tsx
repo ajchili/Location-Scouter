@@ -1,11 +1,17 @@
 import React, { Component } from 'react';
-import { AppBar, Button, Grid, Toolbar, Typography } from '@material-ui/core';
+import {
+  AppBar,
+  Button,
+  Grid,
+  List,
+  Toolbar,
+  Typography,
+} from '@material-ui/core';
 import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
 import { ClickEventValue, Coords } from 'google-map-react';
-import { CreateMapElement, Map } from '../Components';
-import { create } from 'domain';
+import { CreateMapElement, Map, MapElementListItem } from '../Components';
 
 export interface Props {}
 
@@ -83,70 +89,95 @@ export class Scouting extends Component<Props, State> {
   render() {
     const { center, createMapElement, locations } = this.state;
     return (
-      <Grid
-        container
-        direction="column"
-        style={{ display: 'flex', height: '100%' }}
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'nowrap',
+          flexFlow: 'column',
+          height: '100vh',
+        }}
       >
-        <Grid item>
-          <AppBar position="static">
-            <Toolbar>
-              <Typography variant="h6" style={{ flexGrow: 1 }}>
-                Location Scouter
-              </Typography>
-              <Button color="inherit" onClick={this.logout}>
-                Logout
-              </Button>
-            </Toolbar>
-          </AppBar>
-        </Grid>
-        <Grid item style={{ flex: 1 }}>
-          <Grid
-            container
-            direction="row"
-            style={{ maxWidth: '100%', height: '100%' }}
+        <AppBar position="static">
+          <Toolbar>
+            <Typography variant="h6" style={{ flexGrow: 1 }}>
+              Location Scouter
+            </Typography>
+            <Button color="inherit" onClick={this.logout}>
+              Logout
+            </Button>
+          </Toolbar>
+        </AppBar>
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'nowrap',
+            flexFlow: 'row',
+            height: '100%',
+            overflow: 'auto',
+          }}
+        >
+          <Map
+            center={center}
+            locations={locations}
+            onClick={this.createElement}
+            onCenterUpdated={() => {
+              if (center !== undefined && createMapElement === undefined) {
+                this.setState({ center: undefined });
+              }
+            }}
+            children={
+              createMapElement && (
+                <CreateMapElement
+                  lat={createMapElement.lat}
+                  lng={createMapElement.lng}
+                  onCancel={() => {
+                    this.setState({ createMapElement: undefined });
+                  }}
+                  onCreate={this.addLocation}
+                />
+              )
+            }
+          />
+          <div
+            style={{
+              height: '100%',
+              maxHeight: '100%',
+              overflowY: 'scroll',
+              width: '25%',
+            }}
           >
-            <Grid item xs={9}>
-              <Map
-                center={center}
-                locations={locations}
-                onClick={this.createElement}
-                onCenterUpdated={() => {
-                  if (center !== undefined && createMapElement === undefined) {
-                    this.setState({ center: undefined });
+            <List>
+              {locations
+                .sort((a, b) => {
+                  const name1 = a.name || 'Unnamed Element';
+                  const name2 = b.name || 'Unnamed Element';
+                  if (name1 > name2) {
+                    return 1;
+                  } else if (name2 > name1) {
+                    return -1;
                   }
-                }}
-                children={
-                  createMapElement && (
-                    <CreateMapElement
-                      lat={createMapElement.lat}
-                      lng={createMapElement.lng}
-                      onCancel={() => {
-                        this.setState({ createMapElement: undefined });
-                      }}
-                      onCreate={this.addLocation}
-                    />
-                  )
-                }
-              />
-            </Grid>
-            <Grid item xs={3}>
-              {locations.map((location) => (
-                <Typography
-                  key={location.id}
-                  onClick={() =>
-                    this.setState({
-                      center: { lat: location.lat, lng: location.lng },
-                    })
-                  }
-                >
-                  {location.name || location.id}
-                </Typography>
-              ))}
-            </Grid>
-          </Grid>
-        </Grid>
-      </Grid>
+                  return 0;
+                })
+                .map((location) => (
+                  <MapElementListItem
+                    key={location.id}
+                    mapElement={{
+                      id: location.id,
+                      name: location.name || 'Unnamed Element',
+                      lat: location.lat,
+                      lng: location.lng,
+                    }}
+                    onClick={() =>
+                      this.setState({
+                        center: { lat: location.lat, lng: location.lng },
+                      })
+                    }
+                  />
+                ))}
+            </List>
+          </div>
+        </div>
+      </div>
     );
   }
 }
