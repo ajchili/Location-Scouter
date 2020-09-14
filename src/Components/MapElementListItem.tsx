@@ -11,11 +11,13 @@ import { MapElement } from '../lib/types';
 export interface Props {
   mapElement: MapElement;
   onClick: (id: string) => void;
+  onDelete?: (id: string) => void;
+  onEdit?: (id: string) => void;
 }
 
 export class MapElementListItem extends Component<Props> {
   render() {
-    const { mapElement, onClick } = this.props;
+    const { mapElement, onClick, onDelete, onEdit } = this.props;
     return (
       <ListItem
         button
@@ -26,10 +28,22 @@ export class MapElementListItem extends Component<Props> {
       >
         <ListItemText>{mapElement.name}</ListItemText>
         <ListItemSecondaryAction>
-          <IconButton onClick={() => console.log('edit', mapElement.id)}>
+          <IconButton
+            onClick={() => {
+              if (onEdit) {
+                onEdit(mapElement.id);
+              }
+            }}
+          >
             <Edit />
           </IconButton>
-          <IconButton onClick={() => console.log('delete', mapElement.id)}>
+          <IconButton
+            onClick={() => {
+              if (onDelete) {
+                onDelete(mapElement.id);
+              }
+            }}
+          >
             <Delete />
           </IconButton>
         </ListItemSecondaryAction>

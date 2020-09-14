@@ -65,6 +65,30 @@ export class Scouting extends Component<Props, State> {
     });
   };
 
+  deleteLocation = async (id: string): Promise<void> => {
+    const location = this.state.locations.find(
+      (location) => location.id === id
+    );
+    if (
+      location === null ||
+      !window.confirm(
+        `Are you sure that you want to delete "${
+          location.name || 'Unknown Location'
+        }"?`
+      )
+    ) {
+      return;
+    }
+    await firebase.firestore().collection('locations').doc(id).delete();
+    this.setState((previousState) => {
+      return {
+        locations: previousState.locations.filter(
+          (location) => location.id !== id
+        ),
+      };
+    });
+  };
+
   async loadLocations(): Promise<void> {
     const { uid } = firebase.auth().currentUser!;
     const query = await firebase
@@ -172,6 +196,7 @@ export class Scouting extends Component<Props, State> {
                         center: { lat: location.lat, lng: location.lng },
                       })
                     }
+                    onDelete={this.deleteLocation}
                   />
                 ))}
             </List>
