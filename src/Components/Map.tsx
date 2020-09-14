@@ -2,20 +2,28 @@ import React, { Component } from 'react';
 import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
-import GoogleMapReact, { ClickEventValue, Coords } from 'google-map-react';
-import { MapIcon } from '../Components';
+import GoogleMapReact, {
+  ClickEventValue,
+  Coords,
+  Maps,
+} from 'google-map-react';
+import { MapIcon } from './';
 
 export interface Props {
   center?: Coords;
   locations: any[];
   onCenterUpdated: () => void;
   onClick?: (event: ClickEventValue) => void;
+  streetView?: boolean;
 }
 
 export interface State {
   center?: Coords;
   creatingNewLocation: boolean;
   canUseMap: boolean;
+  map?: any;
+  maps?: Maps;
+  ref: Element | null;
 }
 
 const defaultCenter: Coords = {
@@ -34,6 +42,7 @@ export class Map extends Component<Props, State> {
       center: props.center,
       creatingNewLocation: false,
       canUseMap: true,
+      ref: null,
     };
   }
 
@@ -46,10 +55,16 @@ export class Map extends Component<Props, State> {
     }
   }
 
-  logUsage = async (): Promise<void> => {
+  logUsage = async (maps: {
+    map: any;
+    maps: Maps;
+    ref: Element | null;
+  }): Promise<void> => {
+    const { streetView } = this.props;
     const { uid } = firebase.auth().currentUser!;
     const date = new Date();
-    const quotaPeriod = `map#${date.getFullYear()}-${date.getMonth()}`;
+    const service = streetView || false ? 'streetview' : 'map';
+    const quotaPeriod = `${service}#${date.getFullYear()}-${date.getMonth()}`;
     const docReference = firebase.firestore().collection('quotas').doc(uid);
     try {
       const usage = await firebase.firestore().runTransaction(
@@ -69,10 +84,25 @@ export class Map extends Component<Props, State> {
           }
         }
       );
-      console.log(usage);
+      console.log(quotaPeriod, usage);
+      if (streetView === true) {
+        this.setupStreetView(maps.map);
+      }
     } catch (err) {
+      console.error(err);
       this.setState({ canUseMap: false });
+    } finally {
+      this.setState(maps);
     }
+  };
+
+  setupStreetView = (map: any) => {
+    const { center } = this.props;
+    const pano = map.getStreetView();
+    pano.setPosition(center);
+    console.log(Object.keys(pano))
+    pano.enableCloseButton = false;
+    pano.setVisible(true);
   };
 
   private get GoogleMapsAPIKey(): string {
@@ -80,7 +110,7 @@ export class Map extends Component<Props, State> {
   }
 
   render() {
-    const { locations, onClick } = this.props;
+    const { locations, onClick, streetView } = this.props;
     const { center } = this.state;
     return (
       <GoogleMapReact
@@ -108,8 +138,11 @@ export class Map extends Component<Props, State> {
           window.localStorage.setItem('mapDefaultZoom', zoom)
         }
         options={{
+          disableDoubleClickZoom: true,
+          fullscreenControl: !(streetView || false),
           mapTypeId: window.localStorage.getItem('mapTypeId') || 'hybrid',
-          mapTypeControl: true,
+          mapTypeControl: !(streetView || false),
+          zoomControl: !(streetView || false),
         }}
         yesIWantToUseGoogleMapApiInternals
       >
