@@ -145,7 +145,10 @@ export class Scouting extends Component<Props, State> {
             locations={locations}
             onClick={this.createElement}
             onCenterUpdated={() => {
-              if (center !== undefined && createMapElement === undefined) {
+              if (
+                this.state.center !== undefined &&
+                this.state.createMapElement === undefined
+              ) {
                 this.setState({ center: undefined });
               }
             }}
@@ -155,7 +158,10 @@ export class Scouting extends Component<Props, State> {
                   lat={createMapElement.lat}
                   lng={createMapElement.lng}
                   onCancel={() => {
-                    this.setState({ createMapElement: undefined });
+                    this.setState({
+                      center: undefined,
+                      createMapElement: undefined,
+                    });
                   }}
                   onCreate={this.addLocation}
                 />
