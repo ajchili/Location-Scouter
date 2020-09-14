@@ -100,7 +100,6 @@ export class Map extends Component<Props, State> {
     const { center } = this.props;
     const pano = map.getStreetView();
     pano.setPosition(center);
-    console.log(Object.keys(pano))
     pano.enableCloseButton = false;
     pano.setVisible(true);
   };
