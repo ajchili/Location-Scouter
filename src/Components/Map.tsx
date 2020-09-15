@@ -3,6 +3,7 @@ import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
 import GoogleMapReact, {
+  ChangeEventValue,
   ClickEventValue,
   Coords,
   Maps,
@@ -122,20 +123,13 @@ export class Map extends Component<Props, State> {
         onMapTypeIdChange={(mapTypeId) =>
           window.localStorage.setItem('mapTypeId', mapTypeId)
         }
-        onDragEnd={(map: any) => {
-          const { center } = map;
-          this.setState({
-            center: {
-              lat: center.lat(),
-              lng: center.lng(),
-            },
-          });
-          window.localStorage.setItem('mapLat', center.lat());
-          window.localStorage.setItem('mapLng', center.lng());
+        onChange={(event: ChangeEventValue) => {
+          const { center, zoom } = event;
+          this.setState({ center });
+          window.localStorage.setItem('mapLat', center.lat.toString());
+          window.localStorage.setItem('mapLng', center.lng.toString());
+          window.localStorage.setItem('mapDefaultZoom', zoom.toString());
         }}
-        onZoomAnimationEnd={(zoom) =>
-          window.localStorage.setItem('mapDefaultZoom', zoom)
-        }
         options={{
           disableDoubleClickZoom: true,
           fullscreenControl: !(streetView || false),
