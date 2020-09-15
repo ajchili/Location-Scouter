@@ -2,8 +2,9 @@ import React, { Component } from 'react';
 import {
   AppBar,
   Button,
-  Grid,
   List,
+  ListItem,
+  TextField,
   Toolbar,
   Typography,
 } from '@material-ui/core';
@@ -18,6 +19,7 @@ export interface Props {}
 export interface State {
   center?: Coords;
   createMapElement?: Coords;
+  filter: string;
   locations: any[];
 }
 
@@ -25,6 +27,7 @@ export class Scouting extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
+      filter: '',
       locations: [],
     };
   }
@@ -111,7 +114,7 @@ export class Scouting extends Component<Props, State> {
   }
 
   render() {
-    const { center, createMapElement, locations } = this.state;
+    const { center, createMapElement, filter, locations } = this.state;
     return (
       <div
         style={{
@@ -177,7 +180,19 @@ export class Scouting extends Component<Props, State> {
             }}
           >
             <List>
+              <ListItem>
+                <TextField
+                  label="Search..."
+                  fullWidth
+                  onChange={(e) => this.setState({ filter: e.target.value })}
+                  value={filter}
+                ></TextField>
+              </ListItem>
               {locations
+                .filter((location) => {
+                  const { name = 'Unnamed Element' } = location;
+                  return name.toLowerCase().includes(filter.toLowerCase());
+                })
                 .sort((a, b) => {
                   const name1 = a.name || 'Unnamed Element';
                   const name2 = b.name || 'Unnamed Element';
