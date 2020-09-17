@@ -1,0 +1,79 @@
+import React, { Component } from 'react';
+import {
+  Backdrop,
+  colors,
+  List,
+  ListItem,
+  ListSubheader,
+  CircularProgress,
+  TextField,
+} from '@material-ui/core';
+import 'firebase/auth';
+import 'firebase/firestore';
+import { MapElementListItem } from '.';
+
+export interface Props {
+  locations: any[];
+  onClick: (id: string) => void;
+  onDelete?: (id: string) => void;
+  onEdit?: (id: string) => void;
+}
+
+export interface State {
+  filter: string;
+}
+
+export class MapElementList extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      filter: '',
+    };
+  }
+
+  render() {
+    const { locations, onClick, onDelete, onEdit } = this.props;
+    const { filter } = this.state;
+    return (
+      <List style={{ width: '100%' }}>
+        <ListSubheader>
+          <TextField
+            label="Search..."
+            fullWidth
+            onChange={(e) => this.setState({ filter: e.target.value })}
+            value={filter}
+          />
+        </ListSubheader>
+        {locations
+          .filter((location) => {
+            const { name = 'Unnamed Element' } = location;
+            return name.toLowerCase().includes(filter.toLowerCase());
+          })
+          .sort((a, b) => {
+            const name1 = a.name || 'Unnamed Element';
+            const name2 = b.name || 'Unnamed Element';
+            if (name1 > name2) {
+              return 1;
+            } else if (name2 > name1) {
+              return -1;
+            }
+            return 0;
+          })
+          .map((location) => (
+            <MapElementListItem
+              key={location.id}
+              mapElement={{
+                id: location.id,
+                name: location.name || 'Unnamed Element',
+                lat: location.lat,
+                lng: location.lng,
+              }}
+              onClick={onClick}
+              onDelete={onDelete}
+              onEdit={onEdit}
+            />
+          ))}
+      </List>
+    );
+  }
+}

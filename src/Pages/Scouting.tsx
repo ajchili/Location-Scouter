@@ -1,25 +1,16 @@
 import React, { Component } from 'react';
-import {
-  AppBar,
-  Button,
-  List,
-  ListItem,
-  TextField,
-  Toolbar,
-  Typography,
-} from '@material-ui/core';
+import { AppBar, Button, Toolbar, Typography } from '@material-ui/core';
 import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
 import { ClickEventValue, Coords } from 'google-map-react';
-import { CreateMapElement, Map, MapElementListItem } from '../Components';
+import { CreateMapElement, Map, MapElementList } from '../Components';
 
 export interface Props {}
 
 export interface State {
   center?: Coords;
   createMapElement?: Coords;
-  filter: string;
   locations: any[];
 }
 
@@ -27,7 +18,6 @@ export class Scouting extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      filter: '',
       locations: [],
     };
   }
@@ -59,13 +49,17 @@ export class Scouting extends Component<Props, State> {
       name,
       owner: uid,
     };
-    const doc = await firebase.firestore().collection('locations').add(data);
-    const { locations } = this.state;
-    this.setState({
-      center: undefined,
-      createMapElement: undefined,
-      locations: [{ id: doc.id, ...data }].concat(locations),
-    });
+    try {
+      const doc = await firebase.firestore().collection('locations').add(data);
+      const { locations } = this.state;
+      this.setState({
+        center: undefined,
+        createMapElement: undefined,
+        locations: [{ id: doc.id, ...data }].concat(locations),
+      });
+    } catch (err) {
+      // TODO
+    }
   };
 
   deleteLocation = async (id: string): Promise<void> => {
@@ -82,31 +76,39 @@ export class Scouting extends Component<Props, State> {
     ) {
       return;
     }
-    await firebase.firestore().collection('locations').doc(id).delete();
-    this.setState((previousState) => {
-      return {
-        locations: previousState.locations.filter(
-          (location) => location.id !== id
-        ),
-      };
-    });
+    try {
+      await firebase.firestore().collection('locations').doc(id).delete();
+      this.setState((previousState) => {
+        return {
+          locations: previousState.locations.filter(
+            (location) => location.id !== id
+          ),
+        };
+      });
+    } catch (err) {
+      // TODO
+    }
   };
 
   async loadLocations(): Promise<void> {
     const { uid } = firebase.auth().currentUser!;
-    const query = await firebase
-      .firestore()
-      .collection('locations')
-      .where('owner', '==', uid)
-      .get();
-    this.setState({
-      locations: query.docs.map((doc) => {
-        return {
-          id: doc.id,
-          ...doc.data(),
-        };
-      }),
-    });
+    try {
+      const query = await firebase
+        .firestore()
+        .collection('locations')
+        .where('owner', '==', uid)
+        .get();
+      this.setState({
+        locations: query.docs.map((doc) => {
+          return {
+            id: doc.id,
+            ...doc.data(),
+          };
+        }),
+      });
+    } catch (err) {
+      // TODO
+    }
   }
 
   logout(): void {
@@ -114,7 +116,7 @@ export class Scouting extends Component<Props, State> {
   }
 
   render() {
-    const { center, createMapElement, filter, locations } = this.state;
+    const { center, createMapElement, locations } = this.state;
     return (
       <div
         style={{
@@ -173,54 +175,27 @@ export class Scouting extends Component<Props, State> {
           />
           <div
             style={{
+              display: 'flex',
               height: '100%',
               maxHeight: '100%',
               overflowY: 'scroll',
               width: '25%',
             }}
           >
-            <List>
-              <ListItem>
-                <TextField
-                  label="Search..."
-                  fullWidth
-                  onChange={(e) => this.setState({ filter: e.target.value })}
-                  value={filter}
-                ></TextField>
-              </ListItem>
-              {locations
-                .filter((location) => {
-                  const { name = 'Unnamed Element' } = location;
-                  return name.toLowerCase().includes(filter.toLowerCase());
-                })
-                .sort((a, b) => {
-                  const name1 = a.name || 'Unnamed Element';
-                  const name2 = b.name || 'Unnamed Element';
-                  if (name1 > name2) {
-                    return 1;
-                  } else if (name2 > name1) {
-                    return -1;
-                  }
-                  return 0;
-                })
-                .map((location) => (
-                  <MapElementListItem
-                    key={location.id}
-                    mapElement={{
-                      id: location.id,
-                      name: location.name || 'Unnamed Element',
-                      lat: location.lat,
-                      lng: location.lng,
-                    }}
-                    onClick={() =>
-                      this.setState({
-                        center: { lat: location.lat, lng: location.lng },
-                      })
-                    }
-                    onDelete={this.deleteLocation}
-                  />
-                ))}
-            </List>
+            <MapElementList
+              locations={locations}
+              onClick={(id: string) => {
+                const location = locations.find(
+                  (location) => location.id === id
+                );
+                if (location) {
+                  this.setState({
+                    center: { lat: location.lat, lng: location.lng },
+                  });
+                }
+              }}
+              onDelete={this.deleteLocation}
+            />
           </div>
         </div>
       </div>
