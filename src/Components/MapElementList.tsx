@@ -1,11 +1,8 @@
 import React, { Component } from 'react';
 import {
-  Backdrop,
-  colors,
+  Card,
+  CardContent,
   List,
-  ListItem,
-  ListSubheader,
-  CircularProgress,
   TextField,
 } from '@material-ui/core';
 import 'firebase/auth';
@@ -35,45 +32,68 @@ export class MapElementList extends Component<Props, State> {
     const { locations, onClick, onDelete, onEdit } = this.props;
     const { filter } = this.state;
     return (
-      <List style={{ width: '100%' }}>
-        <ListSubheader>
-          <TextField
-            label="Search..."
-            fullWidth
-            onChange={(e) => this.setState({ filter: e.target.value })}
-            value={filter}
-          />
-        </ListSubheader>
-        {locations
-          .filter((location) => {
-            const { name = 'Unnamed Element' } = location;
-            return name.toLowerCase().includes(filter.toLowerCase());
-          })
-          .sort((a, b) => {
-            const name1 = a.name || 'Unnamed Element';
-            const name2 = b.name || 'Unnamed Element';
-            if (name1 > name2) {
-              return 1;
-            } else if (name2 > name1) {
-              return -1;
-            }
-            return 0;
-          })
-          .map((location) => (
-            <MapElementListItem
-              key={location.id}
-              mapElement={{
-                id: location.id,
-                name: location.name || 'Unnamed Element',
-                lat: location.lat,
-                lng: location.lng,
-              }}
-              onClick={onClick}
-              onDelete={onDelete}
-              onEdit={onEdit}
-            />
-          ))}
-      </List>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          maxHeight: '100%',
+          width: '100%',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            paddingTop: 10,
+            paddingLeft: 10,
+            paddingRight: 10,
+            width: 'calc(100% - 20px)',
+            zIndex: 1000,
+          }}
+        >
+          <Card style={{ width: '100%' }}>
+            <CardContent>
+              <TextField
+                label="Search..."
+                fullWidth
+                onChange={(e) => this.setState({ filter: e.target.value })}
+                value={filter}
+              />
+            </CardContent>
+          </Card>
+        </div>
+        <List style={{ width: '100%', height: '100%', overflowY: 'scroll' }}>
+          {locations
+            .filter((location) => {
+              const { name = 'Unnamed Element' } = location;
+              return name.toLowerCase().includes(filter.toLowerCase());
+            })
+            .sort((a, b) => {
+              const name1 = a.name || 'Unnamed Element';
+              const name2 = b.name || 'Unnamed Element';
+              if (name1 > name2) {
+                return 1;
+              } else if (name2 > name1) {
+                return -1;
+              }
+              return 0;
+            })
+            .map((location) => (
+              <MapElementListItem
+                key={location.id}
+                mapElement={{
+                  id: location.id,
+                  name: location.name || 'Unnamed Element',
+                  lat: location.lat,
+                  lng: location.lng,
+                }}
+                onClick={onClick}
+                onDelete={onDelete}
+                onEdit={onEdit}
+              />
+            ))}
+        </List>
+      </div>
     );
   }
 }

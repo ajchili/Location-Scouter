@@ -177,8 +177,6 @@ export class Scouting extends Component<Props, State> {
             style={{
               display: 'flex',
               height: '100%',
-              maxHeight: '100%',
-              overflowY: 'scroll',
               width: '25%',
             }}
           >
