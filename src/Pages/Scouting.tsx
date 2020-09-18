@@ -11,6 +11,7 @@ export interface Props {}
 export interface State {
   center?: Coords;
   createMapElement?: Coords;
+  selectedMapElement?: any;
   locations: any[];
 }
 
@@ -116,7 +117,12 @@ export class Scouting extends Component<Props, State> {
   }
 
   render() {
-    const { center, createMapElement, locations } = this.state;
+    const {
+      center,
+      createMapElement,
+      locations,
+      selectedMapElement,
+    } = this.state;
     return (
       <div
         style={{
@@ -152,25 +158,49 @@ export class Scouting extends Component<Props, State> {
             onCenterUpdated={() => {
               if (
                 this.state.center !== undefined &&
-                this.state.createMapElement === undefined
+                this.state.createMapElement === undefined &&
+                this.state.selectedMapElement === undefined
               ) {
                 this.setState({ center: undefined });
               }
             }}
             children={
-              createMapElement && (
-                <CreateMapElement
-                  lat={createMapElement.lat}
-                  lng={createMapElement.lng}
-                  onCancel={() => {
-                    this.setState({
-                      center: undefined,
-                      createMapElement: undefined,
-                    });
-                  }}
-                  onCreate={this.addLocation}
-                />
-              )
+              <>
+                {createMapElement && (
+                  <CreateMapElement
+                    lat={createMapElement.lat}
+                    lng={createMapElement.lng}
+                    onCancel={() => {
+                      this.setState({
+                        center: undefined,
+                        createMapElement: undefined,
+                      });
+                    }}
+                    onCreate={this.addLocation}
+                  />
+                )}
+                {selectedMapElement && (
+                  <CreateMapElement
+                    defaultName={selectedMapElement.name}
+                    lat={selectedMapElement.lat}
+                    lng={selectedMapElement.lng}
+                    onCancel={() => {
+                      this.setState({
+                        center: undefined,
+                        createMapElement: undefined,
+                        selectedMapElement: undefined,
+                      });
+                    }}
+                    onCreate={() => {
+                      this.setState({
+                        center: undefined,
+                        createMapElement: undefined,
+                        selectedMapElement: undefined,
+                      });
+                    }}
+                  />
+                )}
+              </>
             }
           />
           <div
@@ -189,6 +219,7 @@ export class Scouting extends Component<Props, State> {
                 if (location) {
                   this.setState({
                     center: { lat: location.lat, lng: location.lng },
+                    selectedMapElement: location,
                   });
                 }
               }}
