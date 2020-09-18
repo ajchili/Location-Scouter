@@ -12,6 +12,7 @@ import {
   Loading as LoadingPage,
   Login as LoginPage,
   Scouting as ScoutingPage,
+  Settings as SettingsPage,
 } from '../Pages';
 
 export interface Props {}
@@ -62,6 +63,7 @@ export class Navigator extends Component<Props, State> {
           ) : (
             <>
               <Route exact path="/" component={ScoutingPage} />
+              <Route exact path="/settings" component={SettingsPage} />
             </>
           )}
         </Switch>

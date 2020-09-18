@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
-import { AppBar, Button, Toolbar, Typography } from '@material-ui/core';
 import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
 import { ClickEventValue, Coords } from 'google-map-react';
-import { CreateMapElement, Map, MapElementList } from '../Components';
+import { RouteComponentProps } from 'react-router-dom';
+import { AppBar, CreateMapElement, Map, MapElementList } from '../Components';
 
-export interface Props {}
+export interface Props extends RouteComponentProps {}
 
 export interface State {
   center?: Coords;
@@ -117,6 +117,7 @@ export class Scouting extends Component<Props, State> {
   }
 
   render() {
+    const { history } = this.props;
     const {
       center,
       createMapElement,
@@ -132,16 +133,7 @@ export class Scouting extends Component<Props, State> {
           height: '100vh',
         }}
       >
-        <AppBar position="static">
-          <Toolbar>
-            <Typography variant="h6" style={{ flexGrow: 1 }}>
-              Location Scouter
-            </Typography>
-            <Button color="inherit" onClick={this.logout}>
-              Logout
-            </Button>
-          </Toolbar>
-        </AppBar>
+        <AppBar history={history} page="Scouting" />
         <div
           style={{
             display: 'flex',

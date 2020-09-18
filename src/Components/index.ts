@@ -1,3 +1,4 @@
+export { AppBar } from './AppBar';
 export { CreateMapElement } from './CreateMapElement';
 export { Map } from './Map';
 export { MapElementList } from './MapElementList';
