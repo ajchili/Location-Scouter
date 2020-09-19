@@ -1,6 +1,7 @@
 export { AppBar } from './AppBar';
 export { CreateMapElement } from './CreateMapElement';
 export { ImportFromGoogleMaps } from './ImportFromGoogleMaps';
+export { LocationScoutingStreetview } from './LocationScoutingStreetview';
 export { LocationScoutingMap } from './LocationScoutingMap';
 export { LocationSettings } from './LocationSettings';
 export { MapElementList } from './MapElementList';

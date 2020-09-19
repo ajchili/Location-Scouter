@@ -1,6 +1,11 @@
 import { EventEmitter } from 'events';
+import { Loader } from '@googlemaps/js-api-loader';
 
 export class MappingService extends EventEmitter {
+  loader: Loader = new Loader({
+    apiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '',
+  });
+
   get savedCenter(): google.maps.LatLngLiteral {
     return {
       lat: parseFloat(window.localStorage.getItem('mapLat') || '0'),

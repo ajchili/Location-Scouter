@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
-import { Loader } from '@googlemaps/js-api-loader';
 import MarkerClusterer from '@google/markerclustererplus';
-import { Card } from '@material-ui/core';
-import { CreateMapElement } from '../Components';
+import { Card, CardContent } from '@material-ui/core';
+import { CreateMapElement, LocationScoutingStreetview } from '../Components';
 import { MappingService } from '../Services';
 let MarkerWithLabels = require('markerwithlabel');
 
@@ -12,18 +11,15 @@ export interface Props {
 }
 
 export interface State {
-  createMapElement?: google.maps.Marker;
   showCreateMapElementDialog: boolean;
 }
 
 export class LocationScoutingMap extends Component<Props, State> {
   private clusterer?: MarkerClusterer;
   private id: string = `map-${new Date().getTime()}`;
-  private static loader: Loader = new Loader({
-    apiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '',
-  });
   private map?: google.maps.Map<HTMLDivElement>;
   private ref: React.RefObject<HTMLDivElement> = React.createRef();
+  private selectedMapElement?: google.maps.Marker;
   private wasMarkerWithLabelsSet: boolean = false;
 
   constructor(props: Props) {
@@ -42,11 +38,10 @@ export class LocationScoutingMap extends Component<Props, State> {
   }
 
   cancelCreateMapElement = () => {
-    const { createMapElement } = this.state;
-    if (this.map !== undefined && createMapElement !== undefined) {
-      createMapElement.setMap(null);
+    if (this.map !== undefined && this.selectedMapElement !== undefined) {
+      this.selectedMapElement.setMap(null);
+      this.selectedMapElement = undefined;
       this.setState({
-        createMapElement: undefined,
         showCreateMapElementDialog: false,
       });
       this.map.setValues({
@@ -56,14 +51,16 @@ export class LocationScoutingMap extends Component<Props, State> {
   };
 
   createMapElement = (coords: google.maps.LatLngLiteral) => {
-    const { createMapElement } = this.state;
-    if (this.map === undefined || createMapElement !== undefined) {
+    if (this.map === undefined || this.selectedMapElement !== undefined) {
       return;
     }
     const markerOffset = { x: 0, y: window.document.body.offsetHeight / 4 };
     MappingService.setCenterWithPadding(coords, markerOffset);
-    const marker = new google.maps.Marker({
+    const marker = new MarkerWithLabels({
       draggable: true,
+      labelAnchor: new google.maps.Point(0, 0),
+      labelClass: 'labels',
+      labelContent: 'New Location',
       map: this.map,
       position: coords,
     });
@@ -84,15 +81,15 @@ export class LocationScoutingMap extends Component<Props, State> {
     this.map.setValues({
       gestureHandling: 'none',
     });
+    this.selectedMapElement = marker;
     this.setState({
-      createMapElement: marker,
       showCreateMapElementDialog: true,
     });
   };
 
   loadMap = async () => {
     try {
-      await LocationScoutingMap.loader.load();
+      await MappingService.loader.load();
       if (!this.wasMarkerWithLabelsSet) {
         MarkerWithLabels = MarkerWithLabels(google.maps);
         this.wasMarkerWithLabelsSet = true;
@@ -241,12 +238,19 @@ export class LocationScoutingMap extends Component<Props, State> {
     });
   };
 
+  streetviewPositionChanged = (position: google.maps.LatLngLiteral) => {
+    if (this.selectedMapElement !== undefined) {
+      this.selectedMapElement.setPosition(position);
+      const markerOffset = { x: 0, y: window.document.body.offsetHeight / 4 };
+      MappingService.setCenterWithPadding(position, markerOffset);
+    }
+  };
+
   setupWindowListeners = () => {
     window.addEventListener('resize', () => {
-      const { createMapElement } = this.state;
-      if (createMapElement !== undefined) {
+      if (this.selectedMapElement !== undefined) {
         const markerOffset = { x: 0, y: window.document.body.offsetHeight / 4 };
-        const position = createMapElement.getPosition();
+        const position = this.selectedMapElement.getPosition();
         if (position === null || position === undefined) {
           return;
         }
@@ -270,28 +274,47 @@ export class LocationScoutingMap extends Component<Props, State> {
           ref={this.ref}
           style={{ height: '100%', width: '100%' }}
         />
-        {showCreateMapElementDialog && (
+        {this.selectedMapElement !== undefined && showCreateMapElementDialog && (
           <div
             style={{
               bottom: '5%',
               display: 'flex',
               flexDirection: 'row',
               left: '5%',
-              gap: '5%',
+              gap: '2%',
               top: '50%',
               position: 'absolute',
               right: '25%',
             }}
           >
             <div style={{ flex: 1 }}>
-              {showCreateMapElementDialog && (
-                <CreateMapElement
-                  onCancel={this.cancelCreateMapElement}
-                  onCreate={() => {}}
-                />
-              )}
+              <CreateMapElement
+                onCancel={this.cancelCreateMapElement}
+                onCreate={() => {}}
+              />
             </div>
-            <div style={{ flex: 3 }}>{/* TODO Street View */}</div>
+            <div style={{ flex: 3 }}>
+              <Card style={{ height: '100%', width: '100%' }}>
+                <CardContent
+                  style={{
+                    height: 'calc(100% - 32px)',
+                    width: 'calc(100% - 32px)',
+                  }}
+                >
+                  <LocationScoutingStreetview
+                    position={{
+                      lat: this.selectedMapElement.getPosition()!.lat(),
+                      lng: this.selectedMapElement.getPosition()!.lng(),
+                    }}
+                    onPositionChange={
+                      showCreateMapElementDialog
+                        ? this.streetviewPositionChanged
+                        : undefined
+                    }
+                  />
+                </CardContent>
+              </Card>
+            </div>
           </div>
         )}
       </div>
