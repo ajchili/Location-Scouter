@@ -138,15 +138,23 @@ export class Scouting extends Component<Props, State> {
             overflow: 'auto',
           }}
         >
-          <LocationScoutingMap
-            locations={locations}
-            onClick={this.createElement}
-          />
           <div
             style={{
               display: 'flex',
+              flex: 3,
               height: '100%',
-              width: '25%',
+            }}
+          >
+            <LocationScoutingMap
+              locations={locations}
+              onClick={this.createElement}
+            />
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              flex: 1,
+              height: '100%',
             }}
           >
             <MapElementList

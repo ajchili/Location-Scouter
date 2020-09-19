@@ -284,7 +284,7 @@ export class LocationScoutingMap extends Component<Props, State> {
               gap: '2%',
               top: '50%',
               position: 'absolute',
-              right: '25%',
+              right: '30%',
             }}
           >
             <div style={{ flex: 1 }}>
