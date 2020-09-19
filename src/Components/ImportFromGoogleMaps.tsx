@@ -11,9 +11,7 @@ import {
   Stepper,
   Typography,
 } from '@material-ui/core';
-import firebase from 'firebase/app';
-import 'firebase/auth';
-import 'firebase/firestore';
+import { LocationManagerService } from '../Services';
 
 export interface Props {
   expanded: boolean;
@@ -285,8 +283,6 @@ export class ImportFromGoogleMaps extends Component<Props, State> {
 
   uploadLocations = async () => {
     const { files } = this.state;
-    const { uid } = firebase.auth().currentUser!;
-
     this.setState({
       canGoBackwards: false,
       canGoForward: false,
@@ -312,15 +308,13 @@ export class ImportFromGoogleMaps extends Component<Props, State> {
               });
             } else {
               newLocations.push({
-                lat: coords[0],
-                lng: coords[1],
+                position: { lat: coords[0], lng: coords[1] },
                 name: coords.join(' '),
                 originalData: {
                   columns: row,
                   fileName: file.name,
                   headers,
                 },
-                owner: uid,
               });
             }
           }
@@ -328,7 +322,11 @@ export class ImportFromGoogleMaps extends Component<Props, State> {
       });
       await Promise.all(
         newLocations.map((location: any) => {
-          return firebase.firestore().collection('locations').add(location);
+          return LocationManagerService.createLocation(
+            location.name,
+            location.position,
+            location.originalData
+          );
         })
       );
       this.setState({ invalidLocations }, () => this.goForward());
