@@ -1,14 +1,59 @@
 import React, { Component } from 'react';
-import { Card, CardContent, List, TextField } from '@material-ui/core';
+import {
+  Card,
+  CardContent,
+  List,
+  Fab,
+  Theme,
+  TextField,
+} from '@material-ui/core';
+import {
+  withTheme,
+  withStyles,
+  StyledComponentProps,
+} from '@material-ui/core/styles';
+import { Add } from '@material-ui/icons';
 import { MapElementListItem } from '../Components';
 
-export interface Props {
+export interface Props extends StyledComponentProps {
   locations: any[];
 }
 
 export interface State {
   filter: string;
 }
+
+const styles = (theme: Theme) => ({
+  parent: {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
+    maxHeight: '100%',
+    width: '100%',
+    overflow: 'hidden',
+  },
+  listParent: {
+    display: 'flex',
+    flex: 1,
+    paddingLeft: theme.spacing(1),
+    paddingTop: theme.spacing(1),
+    paddingRight: theme.spacing(1),
+    zIndex: 1000,
+  },
+  searchCard: {
+    width: '100%',
+  },
+  list: {
+    height: '100%',
+    overflowY: 'scroll',
+    width: '100%',
+  },
+  fab: {
+    bottom: theme.spacing(1),
+    position: 'absolute',
+    right: theme.spacing(1),
+  },
+});
 
 export class MapElementList extends Component<Props, State> {
   constructor(props: Props) {
@@ -19,29 +64,13 @@ export class MapElementList extends Component<Props, State> {
   }
 
   render() {
-    const { locations } = this.props;
+    const { classes = {}, locations } = this.props;
     const { filter } = this.state;
+
     return (
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100%',
-          maxHeight: '100%',
-          width: '100%',
-          overflow: 'hidden',
-        }}
-      >
-        <div
-          style={{
-            paddingTop: 10,
-            paddingLeft: 10,
-            paddingRight: 10,
-            width: 'calc(100% - 20px)',
-            zIndex: 1000,
-          }}
-        >
-          <Card style={{ width: '100%' }}>
+      <div className={classes.parent}>
+        <div className={classes.listParent}>
+          <Card className={classes.searchCard}>
             <CardContent>
               <TextField
                 label="Search..."
@@ -52,7 +81,7 @@ export class MapElementList extends Component<Props, State> {
             </CardContent>
           </Card>
         </div>
-        <List style={{ width: '100%', height: '100%', overflowY: 'scroll' }}>
+        <List className={classes.list}>
           {locations
             .filter((location) => {
               const { name = 'Unnamed Element' } = location;
@@ -80,7 +109,15 @@ export class MapElementList extends Component<Props, State> {
               />
             ))}
         </List>
+        <Fab className={classes.fab}>
+          <Add />
+        </Fab>
       </div>
     );
   }
 }
+
+export default withTheme(
+  // @ts-ignore
+  withStyles(styles, { withTheme: true })(MapElementList)
+);
