@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
 import MarkerClusterer from '@google/markerclustererplus';
+import { Card } from '@material-ui/core';
+import { CreateMapElement } from '../Components';
 import { MappingService } from '../Services';
 let MarkerWithLabels = require('markerwithlabel');
 
@@ -9,7 +11,10 @@ export interface Props {
   onClick?: (location: google.maps.LatLngLiteral) => void;
 }
 
-export interface State {}
+export interface State {
+  createMapElement?: google.maps.Marker;
+  showCreateMapElementDialog: boolean;
+}
 
 export class LocationScoutingMap extends Component<Props, State> {
   private clusterer?: MarkerClusterer;
@@ -23,7 +28,9 @@ export class LocationScoutingMap extends Component<Props, State> {
 
   constructor(props: Props) {
     super(props);
-    this.state = {};
+    this.state = {
+      showCreateMapElementDialog: false,
+    };
   }
 
   componentDidMount() {
@@ -33,6 +40,55 @@ export class LocationScoutingMap extends Component<Props, State> {
   componentDidUpdate() {
     this.setupCluserer();
   }
+
+  cancelCreateMapElement = () => {
+    const { createMapElement } = this.state;
+    if (this.map !== undefined && createMapElement !== undefined) {
+      createMapElement.setMap(null);
+      this.setState({
+        createMapElement: undefined,
+        showCreateMapElementDialog: false,
+      });
+      this.map.setValues({
+        gestureHandling: 'greedy',
+      });
+    }
+  };
+
+  createMapElement = (coords: google.maps.LatLngLiteral) => {
+    const { createMapElement } = this.state;
+    if (this.map === undefined || createMapElement !== undefined) {
+      return;
+    }
+    const markerOffset = { x: 0, y: window.document.body.offsetHeight / 4 };
+    MappingService.setCenterWithPadding(coords, markerOffset);
+    const marker = new google.maps.Marker({
+      draggable: true,
+      map: this.map,
+      position: coords,
+    });
+    marker.addListener('dragstart', (dragEvent: google.maps.MouseEvent) => {
+      this.setState({
+        showCreateMapElementDialog: false,
+      });
+    });
+    marker.addListener('dragend', (dragEvent: google.maps.MouseEvent) => {
+      MappingService.setCenterWithPadding(
+        { lat: dragEvent.latLng.lat(), lng: dragEvent.latLng.lng() },
+        markerOffset
+      );
+      this.setState({
+        showCreateMapElementDialog: true,
+      });
+    });
+    this.map.setValues({
+      gestureHandling: 'none',
+    });
+    this.setState({
+      createMapElement: marker,
+      showCreateMapElementDialog: true,
+    });
+  };
 
   loadMap = async () => {
     try {
@@ -54,6 +110,7 @@ export class LocationScoutingMap extends Component<Props, State> {
     });
     this.setupMapListeners();
     this.setupMappingServiceListeners();
+    this.setupWindowListeners();
   };
 
   setupCluserer = () => {
@@ -138,11 +195,12 @@ export class LocationScoutingMap extends Component<Props, State> {
         if (Object.keys(event).includes('placeId')) {
           event.stop();
         }
+        const coords = { lat: event.latLng.lat(), lng: event.latLng.lng() };
         if (this.map !== undefined) {
-          this.map.panTo({ lat: event.latLng.lat(), lng: event.latLng.lng() });
+          this.createMapElement(coords);
         }
         if (onClick) {
-          onClick({ lat: event.latLng.lat(), lng: event.latLng.lng() });
+          onClick(coords);
         }
       }
     );
@@ -168,7 +226,7 @@ export class LocationScoutingMap extends Component<Props, State> {
   };
 
   setupMappingServiceListeners = () => {
-    MappingService.on('centerSet', (center: google.maps.LatLngLiteral) => {
+    MappingService.on('panTo', (center: google.maps.LatLngLiteral) => {
       if (this.map !== undefined) {
         this.map.panTo(center);
         if (this.map.getZoom() !== 16) {
@@ -176,9 +234,35 @@ export class LocationScoutingMap extends Component<Props, State> {
         }
       }
     });
+    MappingService.on('panBy', (position: { x: number; y: number }) => {
+      if (this.map !== undefined) {
+        this.map.panBy(position.x, position.y);
+      }
+    });
+  };
+
+  setupWindowListeners = () => {
+    window.addEventListener('resize', () => {
+      const { createMapElement } = this.state;
+      if (createMapElement !== undefined) {
+        const markerOffset = { x: 0, y: window.document.body.offsetHeight / 4 };
+        const position = createMapElement.getPosition();
+        if (position === null || position === undefined) {
+          return;
+        }
+        MappingService.setCenterWithPadding(
+          {
+            lat: position.lat(),
+            lng: position.lng(),
+          },
+          markerOffset
+        );
+      }
+    });
   };
 
   render() {
+    const { showCreateMapElementDialog } = this.state;
     return (
       <div style={{ height: '100%', width: '100%' }}>
         <div
@@ -186,6 +270,30 @@ export class LocationScoutingMap extends Component<Props, State> {
           ref={this.ref}
           style={{ height: '100%', width: '100%' }}
         />
+        {showCreateMapElementDialog && (
+          <div
+            style={{
+              bottom: '5%',
+              display: 'flex',
+              flexDirection: 'row',
+              left: '5%',
+              gap: '5%',
+              top: '50%',
+              position: 'absolute',
+              right: '25%',
+            }}
+          >
+            <div style={{ flex: 1 }}>
+              {showCreateMapElementDialog && (
+                <CreateMapElement
+                  onCancel={this.cancelCreateMapElement}
+                  onCreate={() => {}}
+                />
+              )}
+            </div>
+            <div style={{ flex: 3 }}>{/* TODO Street View */}</div>
+          </div>
+        )}
       </div>
     );
   }

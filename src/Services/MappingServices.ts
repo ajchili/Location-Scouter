@@ -17,7 +17,15 @@ export class MappingService extends EventEmitter {
   }
 
   setCenter(center: google.maps.LatLngLiteral) {
-    this.emit('centerSet', center);
+    this.emit('panTo', center);
+  }
+
+  setCenterWithPadding(
+    center: google.maps.LatLngLiteral,
+    padding: { x: number; y: number }
+  ) {
+    this.emit('panTo', center);
+    this.emit('panBy', padding);
   }
 }
 
