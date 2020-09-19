@@ -20,7 +20,7 @@ export class LocationScoutingMap extends Component<Props, State> {
   private map?: google.maps.Map<HTMLDivElement>;
   private ref: React.RefObject<HTMLDivElement> = React.createRef();
   private selectedMapElement?: google.maps.Marker;
-  private wasMarkerWithLabelsSet: boolean = false;
+  private static wasMarkerWithLabelsSet: boolean = false;
 
   constructor(props: Props) {
     super(props);
@@ -90,9 +90,9 @@ export class LocationScoutingMap extends Component<Props, State> {
   loadMap = async () => {
     try {
       await MappingService.loader.load();
-      if (!this.wasMarkerWithLabelsSet) {
+      if (!LocationScoutingMap.wasMarkerWithLabelsSet) {
         MarkerWithLabels = MarkerWithLabels(google.maps);
-        this.wasMarkerWithLabelsSet = true;
+        LocationScoutingMap.wasMarkerWithLabelsSet = true;
       }
     } catch (err) {
       console.error(err);
