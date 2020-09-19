@@ -1,17 +1,21 @@
 import React, { Component } from 'react';
 import MarkerClusterer from '@google/markerclustererplus';
 import { Card, CardContent } from '@material-ui/core';
-import { CreateMapElement, LocationScoutingStreetview } from '../Components';
-import { MappingService } from '../Services';
+import {
+  CreateMapElement,
+  EditMapElement,
+  LocationScoutingStreetview,
+} from '../Components';
+import { LocationManagerService, MappingService } from '../Services';
 let MarkerWithLabels = require('markerwithlabel');
 
 export interface Props {
   locations: any[];
-  onClick?: (location: google.maps.LatLngLiteral) => void;
 }
 
 export interface State {
   showCreateMapElementDialog: boolean;
+  showEditMapElementDialog: boolean;
 }
 
 export class LocationScoutingMap extends Component<Props, State> {
@@ -26,6 +30,42 @@ export class LocationScoutingMap extends Component<Props, State> {
     super(props);
     this.state = {
       showCreateMapElementDialog: false,
+      showEditMapElementDialog: false,
+    };
+  }
+
+  get selectedMapElementId(): string | undefined {
+    const { locations } = this.props;
+    if (this.selectedMapElement === undefined) {
+      return;
+    }
+    const position = this.selectedMapElementPosition;
+    if (position === undefined) {
+      return;
+    }
+    for (let location of locations) {
+      if (
+        this.selectedMapElement.getTitle() === location.name &&
+        position.lat === location.lat &&
+        position.lng === location.lng
+      ) {
+        return location.id;
+      }
+    }
+    return;
+  }
+
+  get selectedMapElementPosition(): google.maps.LatLngLiteral | undefined {
+    if (this.selectedMapElement === undefined) {
+      return;
+    }
+    const position = this.selectedMapElement.getPosition();
+    if (position === undefined || position === null) {
+      return;
+    }
+    return {
+      lat: position.lat(),
+      lng: position.lng(),
     };
   }
 
@@ -87,6 +127,18 @@ export class LocationScoutingMap extends Component<Props, State> {
     });
   };
 
+  deselectMapElement = () => {
+    if (this.map !== undefined && this.selectedMapElement !== undefined) {
+      this.selectedMapElement = undefined;
+      this.setState({
+        showEditMapElementDialog: false,
+      });
+      this.map.setValues({
+        gestureHandling: 'greedy',
+      });
+    }
+  };
+
   loadMap = async () => {
     try {
       await MappingService.loadGoogleMaps('map');
@@ -105,12 +157,71 @@ export class LocationScoutingMap extends Component<Props, State> {
       streetViewControl: false,
       zoom: MappingService.savedZoom,
     });
+    this.setupLocationManagerServiceListeners();
     this.setupMapListeners();
     this.setupMappingServiceListeners();
     this.setupWindowListeners();
+    this.setupCluserer();
   };
 
-  setupCluserer = () => {
+  locationToMarkerWithLabels = (location: any): google.maps.Marker => {
+    const marker = new MarkerWithLabels({
+      labelAnchor: new google.maps.Point(0, 0),
+      labelClass: 'labels',
+      labelContent: location.name,
+      position: {
+        lat: location.lat,
+        lng: location.lng,
+      },
+      title: location.name,
+    });
+    // Add click listener to maker and label.
+    [marker, marker.label].forEach((element) => {
+      element.addListener('click', () => {
+        LocationManagerService.selectLocation(location);
+      });
+    });
+    return marker;
+  };
+
+  selectLocation = (location: any) => {
+    if (
+      this.map === undefined ||
+      this.selectedMapElement !== undefined ||
+      this.clusterer === undefined
+    ) {
+      return;
+    }
+    for (let marker of this.clusterer.getMarkers()) {
+      const position = marker.getPosition();
+      if (
+        marker.getTitle() === location.name &&
+        position !== null &&
+        position !== undefined &&
+        position.lat() === location.lat &&
+        position.lng() === location.lng
+      ) {
+        const markerOffset = { x: 0, y: window.document.body.offsetHeight / 4 };
+        MappingService.setCenterWithPadding(
+          {
+            lat: location.lat,
+            lng: location.lng,
+          },
+          markerOffset
+        );
+        this.map.setValues({
+          gestureHandling: 'none',
+        });
+        this.selectedMapElement = marker;
+        this.setState({
+          showEditMapElementDialog: true,
+        });
+        break;
+      }
+    }
+  };
+
+  setupCluserer = (forceUpdate: boolean = false) => {
     const { locations } = this.props;
     if (this.map === undefined) {
       return;
@@ -118,28 +229,7 @@ export class LocationScoutingMap extends Component<Props, State> {
     if (this.clusterer === undefined) {
       this.clusterer = new MarkerClusterer(
         this.map,
-        locations.map((location) => {
-          const marker = new MarkerWithLabels({
-            labelAnchor: new google.maps.Point(0, 0),
-            labelClass: 'labels',
-            labelContent: location.name,
-            position: {
-              lat: location.lat,
-              lng: location.lng,
-            },
-            title: location.name,
-          });
-          // Add click listener to maker and label.
-          [marker, marker.label].forEach((element) => {
-            element.addListener('click', () => {
-              MappingService.setCenter({
-                lat: location.lat,
-                lng: location.lng,
-              });
-            });
-          });
-          return marker;
-        }),
+        locations.map(this.locationToMarkerWithLabels),
         {
           clusterClass: 'custom-clustericon',
           styles: [
@@ -162,27 +252,45 @@ export class LocationScoutingMap extends Component<Props, State> {
         }
       );
     } else {
-      if (this.clusterer.getMarkers().length === locations.length) {
+      if (
+        this.clusterer.getMarkers().length === locations.length &&
+        forceUpdate === false
+      ) {
         return;
       }
       this.clusterer.clearMarkers();
-      this.clusterer.addMarkers(
-        locations.map((location) => {
-          return new google.maps.Marker({
-            optimized: true,
-            position: {
-              lat: location.lat,
-              lng: location.lng,
-            },
-            title: location.name,
-          });
-        })
-      );
+      this.clusterer.addMarkers(locations.map(this.locationToMarkerWithLabels));
     }
   };
 
+  setupLocationManagerServiceListeners = () => {
+    ['locationCreated', 'locationDeleted', 'locationEdited'].forEach(
+      (event: string) => {
+        LocationManagerService.addListener(event, () => {
+          const {
+            showCreateMapElementDialog,
+            showEditMapElementDialog,
+          } = this.state;
+          if (showCreateMapElementDialog) {
+            this.cancelCreateMapElement();
+          } else if (showEditMapElementDialog) {
+            this.deselectMapElement();
+          }
+          if (event === 'locationEdited') {
+            this.setupCluserer(true);
+          }
+        });
+      }
+    );
+    LocationManagerService.addListener('locationDeselected', () => {
+      this.deselectMapElement();
+    });
+    LocationManagerService.addListener('locationSelected', (location: any) => {
+      this.selectLocation(location);
+    });
+  };
+
   setupMapListeners = () => {
-    const { onClick } = this.props;
     if (this.map === undefined) {
       return;
     }
@@ -195,9 +303,6 @@ export class LocationScoutingMap extends Component<Props, State> {
         const coords = { lat: event.latLng.lat(), lng: event.latLng.lng() };
         if (this.map !== undefined) {
           this.createMapElement(coords);
-        }
-        if (onClick) {
-          onClick(coords);
         }
       }
     );
@@ -266,7 +371,7 @@ export class LocationScoutingMap extends Component<Props, State> {
   };
 
   render() {
-    const { showCreateMapElementDialog } = this.state;
+    const { showCreateMapElementDialog, showEditMapElementDialog } = this.state;
     return (
       <div style={{ height: '100%', width: '100%' }}>
         <div
@@ -274,49 +379,60 @@ export class LocationScoutingMap extends Component<Props, State> {
           ref={this.ref}
           style={{ height: '100%', width: '100%' }}
         />
-        {this.selectedMapElement !== undefined && showCreateMapElementDialog && (
-          <div
-            style={{
-              bottom: '5%',
-              display: 'flex',
-              flexDirection: 'row',
-              left: '5%',
-              gap: '2%',
-              top: '50%',
-              position: 'absolute',
-              right: '30%',
-            }}
-          >
-            <div style={{ flex: 1 }}>
-              <CreateMapElement
-                onCancel={this.cancelCreateMapElement}
-                onCreate={() => {}}
-              />
-            </div>
-            <div style={{ flex: 3 }}>
-              <Card style={{ height: '100%', width: '100%' }}>
-                <CardContent
-                  style={{
-                    height: 'calc(100% - 32px)',
-                    width: 'calc(100% - 32px)',
-                  }}
-                >
-                  <LocationScoutingStreetview
-                    position={{
-                      lat: this.selectedMapElement.getPosition()!.lat(),
-                      lng: this.selectedMapElement.getPosition()!.lng(),
-                    }}
-                    onPositionChange={
-                      showCreateMapElementDialog
-                        ? this.streetviewPositionChanged
-                        : undefined
-                    }
+        {this.selectedMapElement !== undefined &&
+          this.selectedMapElementPosition !== undefined &&
+          (showCreateMapElementDialog || showEditMapElementDialog) && (
+            <div
+              style={{
+                bottom: '5%',
+                display: 'flex',
+                flexDirection: 'row',
+                left: '5%',
+                gap: '2%',
+                top: '50%',
+                position: 'absolute',
+                right: '30%',
+              }}
+            >
+              <div style={{ flex: 1 }}>
+                {showCreateMapElementDialog && (
+                  <CreateMapElement
+                    position={this.selectedMapElementPosition}
+                    onCancel={this.cancelCreateMapElement}
                   />
-                </CardContent>
-              </Card>
+                )}
+                {showEditMapElementDialog &&
+                  this.selectedMapElementId !== undefined && (
+                    <EditMapElement
+                      id={this.selectedMapElementId}
+                      name={this.selectedMapElement.getTitle() || ''}
+                    />
+                  )}
+              </div>
+              <div style={{ flex: 3 }}>
+                <Card style={{ height: '100%', width: '100%' }}>
+                  <CardContent
+                    style={{
+                      height: 'calc(100% - 32px)',
+                      width: 'calc(100% - 32px)',
+                    }}
+                  >
+                    <LocationScoutingStreetview
+                      position={{
+                        lat: this.selectedMapElement.getPosition()!.lat(),
+                        lng: this.selectedMapElement.getPosition()!.lng(),
+                      }}
+                      onPositionChange={
+                        showCreateMapElementDialog
+                          ? this.streetviewPositionChanged
+                          : undefined
+                      }
+                    />
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          </div>
-        )}
+          )}
       </div>
     );
   }

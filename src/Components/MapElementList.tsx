@@ -1,18 +1,9 @@
 import React, { Component } from 'react';
-import {
-  Card,
-  CardContent,
-  List,
-  TextField,
-} from '@material-ui/core';
-import 'firebase/auth';
-import 'firebase/firestore';
-import { MapElementListItem } from '.';
+import { Card, CardContent, List, TextField } from '@material-ui/core';
+import { MapElementListItem } from '../Components';
 
 export interface Props {
   locations: any[];
-  onDelete?: (id: string) => void;
-  onEdit?: (id: string) => void;
 }
 
 export interface State {
@@ -28,7 +19,7 @@ export class MapElementList extends Component<Props, State> {
   }
 
   render() {
-    const { locations, onDelete, onEdit } = this.props;
+    const { locations } = this.props;
     const { filter } = this.state;
     return (
       <div
@@ -86,8 +77,6 @@ export class MapElementList extends Component<Props, State> {
                   lat: location.lat,
                   lng: location.lng,
                 }}
-                onDelete={onDelete}
-                onEdit={onEdit}
               />
             ))}
         </List>

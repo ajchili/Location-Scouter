@@ -1,7 +1,4 @@
 import React, { Component } from 'react';
-import firebase from 'firebase/app';
-import 'firebase/auth';
-import 'firebase/firestore';
 import { RouteComponentProps } from 'react-router-dom';
 import { AppBar, LocationScoutingMap, MapElementList } from '../Components';
 import { LocationManagerService } from '../Services';
@@ -9,7 +6,6 @@ import { LocationManagerService } from '../Services';
 export interface Props extends RouteComponentProps {}
 
 export interface State {
-  selectedMapElement?: any;
   locations: any[];
 }
 
@@ -22,76 +18,20 @@ export class Scouting extends Component<Props, State> {
   }
 
   componentDidMount() {
-    LocationManagerService.addListener('locationsLoaded', () => {
-      this.setState({
-        locations: LocationManagerService.locations,
+    [
+      'locationCreated',
+      'locationDeleted',
+      'locationEdited',
+      'locationsLoaded',
+    ].forEach((event: string) => {
+      LocationManagerService.addListener(event, () => {
+        console.log(event);
+        this.setState({
+          locations: LocationManagerService.locations,
+        });
       });
     });
     LocationManagerService.loadLocations();
-  }
-
-  createElement = (coords: google.maps.LatLngLiteral): void => {
-    // const { createMapElement } = this.state;
-    // if (createMapElement !== undefined) {
-    //   return;
-    // }
-  };
-
-  addLocation = async (name: string): Promise<void> => {
-    // const { createMapElement } = this.state;
-    // if (createMapElement === undefined) {
-    //   return;
-    // }
-    // const { uid } = firebase.auth().currentUser!;
-    // const { lat, lng } = createMapElement;
-    // const data = {
-    //   lat,
-    //   lng,
-    //   name,
-    //   owner: uid,
-    // };
-    // try {
-    //   const doc = await firebase.firestore().collection('locations').add(data);
-    //   const { locations } = this.state;
-    //   this.setState({
-    //     createMapElement: undefined,
-    //     locations: [{ id: doc.id, ...data }].concat(locations),
-    //   });
-    // } catch (err) {
-    //   // TODO
-    // }
-  };
-
-  deleteLocation = async (id: string): Promise<void> => {
-    const location = this.state.locations.find(
-      (location) => location.id === id
-    );
-    if (
-      location === null ||
-      !window.confirm(
-        `Are you sure that you want to delete "${
-          location.name || 'Unknown Location'
-        }"?`
-      )
-    ) {
-      return;
-    }
-    try {
-      await firebase.firestore().collection('locations').doc(id).delete();
-      this.setState((previousState) => {
-        return {
-          locations: previousState.locations.filter(
-            (location) => location.id !== id
-          ),
-        };
-      });
-    } catch (err) {
-      // TODO
-    }
-  };
-
-  logout(): void {
-    firebase.auth().signOut();
   }
 
   render() {
@@ -123,10 +63,7 @@ export class Scouting extends Component<Props, State> {
               height: '100%',
             }}
           >
-            <LocationScoutingMap
-              locations={locations}
-              onClick={this.createElement}
-            />
+            <LocationScoutingMap locations={locations} />
           </div>
           <div
             style={{
@@ -135,10 +72,7 @@ export class Scouting extends Component<Props, State> {
               height: '100%',
             }}
           >
-            <MapElementList
-              locations={locations}
-              onDelete={this.deleteLocation}
-            />
+            <MapElementList locations={locations} />
           </div>
         </div>
       </div>

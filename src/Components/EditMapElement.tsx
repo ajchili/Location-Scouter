@@ -10,29 +10,35 @@ import {
 import { LocationManagerService } from '../Services';
 
 export interface Props {
-  defaultName?: string;
-  position: google.maps.LatLngLiteral;
-  onCancel: () => void;
+  id: string;
+  name: string;
 }
 
 export interface State {
   elementName: string;
 }
 
-export class CreateMapElement extends Component<Props, State> {
+export class EditMapElement extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { elementName: props.defaultName || '' };
+    this.state = { elementName: props.name };
+  }
+
+  get canUpdate(): boolean {
+    return (
+      this.state.elementName.length > 0 &&
+      this.state.elementName !== this.props.name
+    );
   }
 
   render() {
-    const { onCancel } = this.props;
+    const { id } = this.props;
     const { elementName } = this.state;
 
     return (
       <Card style={{ height: '100%', width: '100%' }}>
         <CardContent>
-          <Typography gutterBottom>Create a new map Element</Typography>
+          <Typography gutterBottom>Map Element Properties</Typography>
           <TextField
             fullWidth
             label="Element Name"
@@ -43,21 +49,19 @@ export class CreateMapElement extends Component<Props, State> {
         <CardActions>
           <Button
             color="primary"
-            disabled={elementName.length === 0}
+            disabled={!this.canUpdate}
             onClick={(e) => {
-              const { position } = this.props;
-              const { elementName } = this.state;
               e.stopPropagation();
-              LocationManagerService.createLocation(elementName, position);
+              LocationManagerService.updateLocation(id, elementName);
             }}
           >
-            Create
+            Save
           </Button>
           <Button
             color="secondary"
             onClick={(e) => {
               e.stopPropagation();
-              onCancel();
+              LocationManagerService.deselectLocation();
             }}
           >
             Cancel

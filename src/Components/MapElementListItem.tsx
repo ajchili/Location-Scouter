@@ -8,19 +8,17 @@ import {
   IconButton,
   ListItem,
 } from '@material-ui/core';
-import { Delete, Edit, FindInPage } from '@material-ui/icons';
+import { Delete, FindInPage } from '@material-ui/icons';
 import { MapElement } from '../lib/types';
-import { MappingService } from '../Services';
+import { LocationManagerService, MappingService } from '../Services';
 
 export interface Props {
   mapElement: MapElement;
-  onDelete?: (id: string) => void;
-  onEdit?: (id: string) => void;
 }
 
 export class MapElementListItem extends Component<Props> {
   render() {
-    const { mapElement, onDelete, onEdit } = this.props;
+    const { mapElement } = this.props;
     return (
       <ListItem style={{ width: '100%' }}>
         <Card style={{ width: '100%' }} variant="outlined">
@@ -29,30 +27,24 @@ export class MapElementListItem extends Component<Props> {
             <IconButton
               aria-label="show element on map"
               onClick={() => {
-                MappingService.setCenter({
-                  lat: mapElement.lat,
-                  lng: mapElement.lng,
-                });
+                LocationManagerService.selectLocation(mapElement);
               }}
             >
               <FindInPage />
             </IconButton>
             <IconButton
-              aria-label="edit map element"
-              onClick={() => {
-                if (onEdit) {
-                  onEdit(mapElement.id);
-                }
-              }}
-            >
-              <Edit />
-            </IconButton>
-            <IconButton
               aria-label="delete map element"
               onClick={() => {
-                if (onDelete) {
-                  onDelete(mapElement.id);
-                }
+                LocationManagerService.selectLocation(mapElement);
+                setTimeout(() => {
+                  if (
+                    window.confirm(
+                      `Are you sure that you want to delete "${mapElement.name}"? This is a non-reversible process!`
+                    ) === true
+                  ) {
+                    LocationManagerService.deleteLocation(mapElement.id);
+                  }
+                }, 0);
               }}
             >
               <Delete />
