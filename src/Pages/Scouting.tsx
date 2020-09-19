@@ -3,14 +3,8 @@ import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
 import { RouteComponentProps } from 'react-router-dom';
-import {
-  AppBar,
-  CreateMapElement,
-  LocationScoutingMap,
-  MapElementList,
-} from '../Components';
-import { MapElement } from '../lib/types';
-import { MappingService } from '../Services';
+import { AppBar, LocationScoutingMap, MapElementList } from '../Components';
+import { LocationManagerService } from '../Services';
 
 export interface Props extends RouteComponentProps {}
 
@@ -23,12 +17,17 @@ export class Scouting extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      locations: [],
+      locations: LocationManagerService.locations,
     };
   }
 
   componentDidMount() {
-    this.loadLocations();
+    LocationManagerService.addListener('locationsLoaded', () => {
+      this.setState({
+        locations: LocationManagerService.locations,
+      });
+    });
+    LocationManagerService.loadLocations();
   }
 
   createElement = (coords: google.maps.LatLngLiteral): void => {
@@ -90,27 +89,6 @@ export class Scouting extends Component<Props, State> {
       // TODO
     }
   };
-
-  async loadLocations(): Promise<void> {
-    const { uid } = firebase.auth().currentUser!;
-    try {
-      const query = await firebase
-        .firestore()
-        .collection('locations')
-        .where('owner', '==', uid)
-        .get();
-      this.setState({
-        locations: query.docs.map((doc) => {
-          return {
-            id: doc.id,
-            ...doc.data(),
-          };
-        }),
-      });
-    } catch (err) {
-      // TODO
-    }
-  }
 
   logout(): void {
     firebase.auth().signOut();
