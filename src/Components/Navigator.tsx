@@ -60,7 +60,7 @@ export class Navigator extends Component<Props, State> {
           <>
             {accountType === 'unauthenticated' ? (
               <>
-                <Route exact path="/" children={<Redirect to="/login" />} />
+                <Route path="/" children={<Redirect to="/login" />} />
                 <Route exact path="/login" component={LoginPage} />
               </>
             ) : (
@@ -69,9 +69,9 @@ export class Navigator extends Component<Props, State> {
                   <Route exact path="/" component={ScoutingPage} />
                 )}
                 <Route exact path="/settings" component={SettingsPage} />
+                <Route path="/" children={<Redirect to="/" />} />
               </>
             )}
-            <Route path="/" children={<Redirect to="/" />} />
           </>
         </Switch>
       </Router>
