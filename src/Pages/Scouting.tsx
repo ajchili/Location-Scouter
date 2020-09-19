@@ -2,15 +2,19 @@ import React, { Component } from 'react';
 import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
-import { ClickEventValue, Coords } from 'google-map-react';
 import { RouteComponentProps } from 'react-router-dom';
-import { AppBar, CreateMapElement, Map, MapElementList } from '../Components';
+import {
+  AppBar,
+  CreateMapElement,
+  LocationScoutingMap,
+  MapElementList,
+} from '../Components';
+import { MapElement } from '../lib/types';
+import { MappingService } from '../Services';
 
 export interface Props extends RouteComponentProps {}
 
 export interface State {
-  center?: Coords;
-  createMapElement?: Coords;
   selectedMapElement?: any;
   locations: any[];
 }
@@ -27,40 +31,36 @@ export class Scouting extends Component<Props, State> {
     this.loadLocations();
   }
 
-  createElement = (event: ClickEventValue): void => {
-    const { createMapElement } = this.state;
-    if (createMapElement !== undefined) {
-      return;
-    }
-    const { lat, lng } = event;
-    const coords = { lat, lng };
-    this.setState({ center: coords, createMapElement: coords });
+  createElement = (coords: google.maps.LatLngLiteral): void => {
+    // const { createMapElement } = this.state;
+    // if (createMapElement !== undefined) {
+    //   return;
+    // }
   };
 
   addLocation = async (name: string): Promise<void> => {
-    const { createMapElement } = this.state;
-    if (createMapElement === undefined) {
-      return;
-    }
-    const { uid } = firebase.auth().currentUser!;
-    const { lat, lng } = createMapElement;
-    const data = {
-      lat,
-      lng,
-      name,
-      owner: uid,
-    };
-    try {
-      const doc = await firebase.firestore().collection('locations').add(data);
-      const { locations } = this.state;
-      this.setState({
-        center: undefined,
-        createMapElement: undefined,
-        locations: [{ id: doc.id, ...data }].concat(locations),
-      });
-    } catch (err) {
-      // TODO
-    }
+    // const { createMapElement } = this.state;
+    // if (createMapElement === undefined) {
+    //   return;
+    // }
+    // const { uid } = firebase.auth().currentUser!;
+    // const { lat, lng } = createMapElement;
+    // const data = {
+    //   lat,
+    //   lng,
+    //   name,
+    //   owner: uid,
+    // };
+    // try {
+    //   const doc = await firebase.firestore().collection('locations').add(data);
+    //   const { locations } = this.state;
+    //   this.setState({
+    //     createMapElement: undefined,
+    //     locations: [{ id: doc.id, ...data }].concat(locations),
+    //   });
+    // } catch (err) {
+    //   // TODO
+    // }
   };
 
   deleteLocation = async (id: string): Promise<void> => {
@@ -118,12 +118,7 @@ export class Scouting extends Component<Props, State> {
 
   render() {
     const { history } = this.props;
-    const {
-      center,
-      createMapElement,
-      locations,
-      selectedMapElement,
-    } = this.state;
+    const { locations } = this.state;
     return (
       <div
         style={{
@@ -143,57 +138,9 @@ export class Scouting extends Component<Props, State> {
             overflow: 'auto',
           }}
         >
-          <Map
-            center={center}
+          <LocationScoutingMap
             locations={locations}
             onClick={this.createElement}
-            onCenterUpdated={() => {
-              if (
-                this.state.center !== undefined &&
-                this.state.createMapElement === undefined &&
-                this.state.selectedMapElement === undefined
-              ) {
-                this.setState({ center: undefined });
-              }
-            }}
-            children={
-              <>
-                {createMapElement && (
-                  <CreateMapElement
-                    lat={createMapElement.lat}
-                    lng={createMapElement.lng}
-                    onCancel={() => {
-                      this.setState({
-                        center: undefined,
-                        createMapElement: undefined,
-                      });
-                    }}
-                    onCreate={this.addLocation}
-                  />
-                )}
-                {selectedMapElement && (
-                  <CreateMapElement
-                    defaultName={selectedMapElement.name}
-                    lat={selectedMapElement.lat}
-                    lng={selectedMapElement.lng}
-                    onCancel={() => {
-                      this.setState({
-                        center: undefined,
-                        createMapElement: undefined,
-                        selectedMapElement: undefined,
-                      });
-                    }}
-                    onCreate={() => {
-                      this.setState({
-                        center: undefined,
-                        createMapElement: undefined,
-                        selectedMapElement: undefined,
-                      });
-                    }}
-                  />
-                )}
-              </>
-            }
           />
           <div
             style={{
@@ -204,17 +151,6 @@ export class Scouting extends Component<Props, State> {
           >
             <MapElementList
               locations={locations}
-              onClick={(id: string) => {
-                const location = locations.find(
-                  (location) => location.id === id
-                );
-                if (location) {
-                  this.setState({
-                    center: { lat: location.lat, lng: location.lng },
-                    selectedMapElement: location,
-                  });
-                }
-              }}
               onDelete={this.deleteLocation}
             />
           </div>

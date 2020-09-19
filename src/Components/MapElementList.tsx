@@ -11,7 +11,6 @@ import { MapElementListItem } from '.';
 
 export interface Props {
   locations: any[];
-  onClick: (id: string) => void;
   onDelete?: (id: string) => void;
   onEdit?: (id: string) => void;
 }
@@ -29,7 +28,7 @@ export class MapElementList extends Component<Props, State> {
   }
 
   render() {
-    const { locations, onClick, onDelete, onEdit } = this.props;
+    const { locations, onDelete, onEdit } = this.props;
     const { filter } = this.state;
     return (
       <div
@@ -87,7 +86,6 @@ export class MapElementList extends Component<Props, State> {
                   lat: location.lat,
                   lng: location.lng,
                 }}
-                onClick={onClick}
                 onDelete={onDelete}
                 onEdit={onEdit}
               />

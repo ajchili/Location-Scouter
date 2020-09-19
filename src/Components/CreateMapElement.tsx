@@ -8,7 +8,7 @@ import {
   TextField,
   Typography,
 } from '@material-ui/core';
-import { Map, MapIcon } from './';
+import { MapIcon } from './';
 import { BasicMapComponentProps } from '../lib/types';
 
 export interface Props extends BasicMapComponentProps {
@@ -87,14 +87,7 @@ export class CreateMapElement extends Component<Props, State> {
               height: 500 - 16 * 2,
               width: 500 - 16 * 2,
             }}
-          >
-            <Map
-              center={{ lat, lng }}
-              locations={[]}
-              onCenterUpdated={() => {}}
-              streetView
-            />
-          </CardContent>
+          ></CardContent>
         </Card>
       </>
     );

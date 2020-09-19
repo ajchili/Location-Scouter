@@ -14,14 +14,9 @@ firebase.initializeApp({
   messagingSenderId: process.env.REACT_APP_MESSAGE_SENDER_ID,
   appId: process.env.REACT_APP_APP_ID,
 });
-firebase
-  .firestore()
-  .enablePersistence({ synchronizeTabs: true })
-  .finally(() => {
-    ReactDOM.render(
-      <React.StrictMode>
-        <Navigator />
-      </React.StrictMode>,
-      document.getElementById('root')
-    );
-  });
+ReactDOM.render(
+  <React.StrictMode>
+    <Navigator />
+  </React.StrictMode>,
+  document.getElementById('root')
+);
