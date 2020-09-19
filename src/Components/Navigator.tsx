@@ -5,8 +5,6 @@ import {
   Route,
   Switch,
 } from 'react-router-dom';
-import firebase from 'firebase/app';
-import 'firebase/auth';
 import {
   Lander as LandingPage,
   Loading as LoadingPage,
@@ -14,58 +12,67 @@ import {
   Scouting as ScoutingPage,
   Settings as SettingsPage,
 } from '../Pages';
+import { AuthenticationService } from '../Services';
+import { AccountTier, AccountType } from '../Services/AuthenticationService';
 
 export interface Props {}
 
 export interface State {
   initialAuthCheckCompleted: boolean;
-  user: firebase.User | null;
+  accountTier: AccountTier;
+  accountType: AccountType;
 }
 
 export class Navigator extends Component<Props, State> {
-  private unsubscribe?: firebase.Unsubscribe;
-
   constructor(props: Props) {
     super(props);
     this.state = {
       initialAuthCheckCompleted: false,
-      user: null,
+      accountTier: 'none',
+      accountType: 'unauthenticated',
     };
-    this.unsubscribe = firebase
-      .auth()
-      .onAuthStateChanged((user: firebase.User | null) => {
-        const { initialAuthCheckCompleted } = this.state;
-        let newState: any = { user };
-        if (initialAuthCheckCompleted === false) {
-          newState.initialAuthCheckCompleted = true;
-        }
-        this.setState(newState);
-      });
   }
 
-  componentWillUnmount() {
-    if (this.unsubscribe !== undefined) {
-      this.unsubscribe();
-    }
+  componentDidMount() {
+    AuthenticationService.addListener('accountUpdated', () => {
+      const { initialAuthCheckCompleted } = this.state;
+      const { accountTier, accountType } = AuthenticationService;
+      const newState: State = {
+        initialAuthCheckCompleted,
+        accountTier,
+        accountType,
+      };
+      if (initialAuthCheckCompleted === false) {
+        newState.initialAuthCheckCompleted = true;
+      }
+      this.setState(newState);
+    });
   }
 
   render() {
-    const { initialAuthCheckCompleted, user } = this.state;
+    const { initialAuthCheckCompleted, accountTier, accountType } = this.state;
+
+    console.log(accountTier, accountType);
 
     return initialAuthCheckCompleted ? (
       <Router>
         <Switch>
-          {user === null ? (
-            <>
-              <Route exact path="/" children={<Redirect to="/login" />} />
-              <Route exact path="/login" component={LoginPage} />
-            </>
-          ) : (
-            <>
-              <Route exact path="/" component={ScoutingPage} />
-              <Route exact path="/settings" component={SettingsPage} />
-            </>
-          )}
+          <>
+            {accountType === 'unauthenticated' ? (
+              <>
+                <Route exact path="/" children={<Redirect to="/login" />} />
+                <Route exact path="/login" component={LoginPage} />
+              </>
+            ) : (
+              <>
+                {accountTier !== 'none' && (
+                  <Route exact path="/" component={ScoutingPage} />
+                )}
+                <Route exact path="/settings" component={SettingsPage} />
+              </>
+            )}
+            <Route path="/" children={<Redirect to="/" />} />
+          </>
         </Switch>
       </Router>
     ) : (

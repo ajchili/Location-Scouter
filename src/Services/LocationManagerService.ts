@@ -1,9 +1,9 @@
-import { EventEmitter } from 'events';
 import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
+import { FirebaseReliantService } from './FirebaseReliantService';
 
-export class LocationManagerService extends EventEmitter {
+export class LocationManagerService extends FirebaseReliantService {
   public locations: any[] = [];
 
   async createLocation(
@@ -84,7 +84,7 @@ export class LocationManagerService extends EventEmitter {
       name,
     };
     await firebase.firestore().collection('locations').doc(id).update(data);
-    const location = this.locations.find(location => location.id === id);
+    const location = this.locations.find((location) => location.id === id);
     if (location) {
       location.name = name;
     }

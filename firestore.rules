@@ -1,6 +1,10 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    match /accounts/{uid} {
+      allow read: if request.auth.uid == uid;
+    }
+
     match /locations/{location} {
       allow create: if request.auth != null;
       allow delete: if request.auth.uid == resource.data.owner;

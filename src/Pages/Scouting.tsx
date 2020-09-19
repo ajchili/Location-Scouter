@@ -25,7 +25,6 @@ export class Scouting extends Component<Props, State> {
       'locationsLoaded',
     ].forEach((event: string) => {
       LocationManagerService.addListener(event, () => {
-        console.log(event);
         this.setState({
           locations: LocationManagerService.locations,
         });

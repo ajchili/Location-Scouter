@@ -1,10 +1,10 @@
-import { EventEmitter } from 'events';
 import { Loader } from '@googlemaps/js-api-loader';
 import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
+import { FirebaseReliantService } from './FirebaseReliantService';
 
-export class MappingService extends EventEmitter {
+export class MappingService extends FirebaseReliantService {
   private loader: Loader = new Loader({
     apiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '',
   });
