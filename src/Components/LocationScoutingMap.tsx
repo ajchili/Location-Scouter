@@ -89,7 +89,7 @@ export class LocationScoutingMap extends Component<Props, State> {
 
   loadMap = async () => {
     try {
-      await MappingService.loader.load();
+      await MappingService.loadGoogleMaps('map');
       if (!LocationScoutingMap.wasMarkerWithLabelsSet) {
         MarkerWithLabels = MarkerWithLabels(google.maps);
         LocationScoutingMap.wasMarkerWithLabelsSet = true;

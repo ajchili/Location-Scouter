@@ -21,7 +21,7 @@ export class LocationScoutingStreetview extends Component<Props> {
       return;
     }
     try {
-      await MappingService.loader.load();
+      await MappingService.loadGoogleMaps('streetview');
     } catch (err) {
       console.error(err);
       return;
