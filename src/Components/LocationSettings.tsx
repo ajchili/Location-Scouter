@@ -42,7 +42,7 @@ export class LocationSettings extends Component<Props, State> {
     const { expanded } = this.state;
     const { errorSnackbarOpened, errorSnackbarText } = this.state;
     return (
-      <>
+      <div style={{ marginTop: 10 }}>
         <Typography variant="h4">Location Settings</Typography>
         <Divider style={{ marginTop: 10, marginBottom: 10 }} />
         <ImportFromGoogleMaps
@@ -63,7 +63,7 @@ export class LocationSettings extends Component<Props, State> {
           onClose={() => this.setState({ errorSnackbarOpened: false })}
           message={errorSnackbarText}
         />
-      </>
+      </div>
     );
   }
 }

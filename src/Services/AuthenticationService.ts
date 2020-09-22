@@ -7,7 +7,12 @@ export interface Account {
   tier: AccountTier;
   type: AccountType;
 }
-export type AccountTier = 'admin' | 'sponsor' | 'basic' | 'none';
+export type AccountTier =
+  | 'admin'
+  | 'sponsored'
+  | 'plus'
+  | 'basic'
+  | 'none';
 export type AccountType = 'admin' | 'user' | 'unauthenticated';
 
 export class AuthenticationService extends FirebaseReliantService {
