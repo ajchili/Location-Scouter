@@ -300,7 +300,6 @@ export class ImportFromGoogleMaps extends Component<Props, State> {
           for (let row of rows) {
             const columns: string[] = row.split(',');
             const coords = this.parseDMS(columns[0]);
-            console.log(columns[0], coords);
             if (coords.some((coord) => Number.isNaN(coord))) {
               invalidLocations.push({
                 columns: row,
@@ -322,11 +321,11 @@ export class ImportFromGoogleMaps extends Component<Props, State> {
       });
       await Promise.all(
         newLocations.map((location: any) => {
-          return LocationManagerService.createLocation(
-            location.name,
-            location.position,
-            location.originalData
-          );
+          return LocationManagerService.createItem({
+            ...location.position,
+            name: location.name,
+            originalData: location.originalData
+          });
         })
       );
       this.setState({ invalidLocations }, () => this.goForward());

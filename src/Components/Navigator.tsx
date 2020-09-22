@@ -52,8 +52,6 @@ export class Navigator extends Component<Props, State> {
   render() {
     const { initialAuthCheckCompleted, accountTier, accountType } = this.state;
 
-    console.log(accountTier, accountType);
-
     return initialAuthCheckCompleted ? (
       <Router>
         <Switch>

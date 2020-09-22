@@ -42,7 +42,7 @@ export class MapElementListItem extends Component<Props> {
                       `Are you sure that you want to delete "${mapElement.name}"? This is a non-reversible process!`
                     ) === true
                   ) {
-                    LocationManagerService.deleteLocation(mapElement.id);
+                    LocationManagerService.deleteItem(mapElement.id);
                   }
                 }, 0);
               }}

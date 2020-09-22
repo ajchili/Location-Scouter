@@ -52,7 +52,7 @@ export class EditMapElement extends Component<Props, State> {
             disabled={!this.canUpdate}
             onClick={(e) => {
               e.stopPropagation();
-              LocationManagerService.updateLocation(id, elementName);
+              LocationManagerService.updateItem(id, { name: elementName });
             }}
           >
             Save

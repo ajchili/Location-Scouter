@@ -46,9 +46,12 @@ export class CreateMapElement extends Component<Props, State> {
             disabled={elementName.length === 0}
             onClick={(e) => {
               const { position } = this.props;
-              const { elementName } = this.state;
+              const { elementName: name } = this.state;
               e.stopPropagation();
-              LocationManagerService.createLocation(elementName, position);
+              LocationManagerService.createItem({
+                ...position,
+                name,
+              });
             }}
           >
             Create

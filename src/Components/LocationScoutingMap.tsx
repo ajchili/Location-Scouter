@@ -264,22 +264,21 @@ export class LocationScoutingMap extends Component<Props, State> {
   };
 
   setupLocationManagerServiceListeners = () => {
-    ['locationCreated', 'locationDeleted', 'locationEdited'].forEach(
-      (event: string) => {
-        LocationManagerService.addListener(event, () => {
-          const {
-            showCreateMapElementDialog,
-            showEditMapElementDialog,
-          } = this.state;
-          if (showCreateMapElementDialog) {
-            this.cancelCreateMapElement();
-          } else if (showEditMapElementDialog) {
-            this.deselectMapElement();
-          }
-          if (event === 'locationEdited') {
-            this.setupCluserer(true);
-          }
-        });
+    LocationManagerService.addListener(
+      'itemsUpdated',
+      (isUpdate: boolean = false) => {
+        const {
+          showCreateMapElementDialog,
+          showEditMapElementDialog,
+        } = this.state;
+        if (showCreateMapElementDialog) {
+          this.cancelCreateMapElement();
+        } else if (showEditMapElementDialog) {
+          this.deselectMapElement();
+        }
+        if (isUpdate) {
+          this.setupCluserer(true);
+        }
       }
     );
     LocationManagerService.addListener('locationDeselected', () => {

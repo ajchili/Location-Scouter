@@ -13,24 +13,19 @@ export class Scouting extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      locations: LocationManagerService.locations,
+      locations: LocationManagerService.collectionAsArray,
     };
   }
 
   componentDidMount() {
-    [
-      'locationCreated',
-      'locationDeleted',
-      'locationEdited',
-      'locationsLoaded',
-    ].forEach((event: string) => {
+    ['itemsUpdated', 'itemsLoaded'].forEach((event: string) => {
       LocationManagerService.addListener(event, () => {
         this.setState({
-          locations: LocationManagerService.locations,
+          locations: LocationManagerService.collectionAsArray,
         });
       });
     });
-    LocationManagerService.loadLocations();
+    LocationManagerService.loadItems();
   }
 
   render() {
