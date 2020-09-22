@@ -346,6 +346,7 @@ export class LocationScoutingMap extends Component<Props, State> {
   streetviewPositionChanged = (position: google.maps.LatLngLiteral) => {
     if (this.selectedMapElement !== undefined) {
       this.selectedMapElement.setPosition(position);
+      this.forceUpdate();
       const markerOffset = { x: 0, y: window.document.body.offsetHeight / 4 };
       MappingService.setCenterWithPadding(position, markerOffset);
     }
