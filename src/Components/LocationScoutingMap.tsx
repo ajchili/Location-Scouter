@@ -331,7 +331,7 @@ export class LocationScoutingMap extends Component<Props, State> {
     MappingService.on('panTo', (center: google.maps.LatLngLiteral) => {
       if (this.map !== undefined) {
         this.map.panTo(center);
-        if (this.map.getZoom() !== 16) {
+        if (this.map.getZoom() < 16) {
           this.map.setZoom(16);
         }
       }
