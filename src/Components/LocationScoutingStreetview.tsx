@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Loader } from '../Components';
 import { MappingService } from '../Services';
 
 export interface Props {
@@ -6,10 +7,22 @@ export interface Props {
   onPositionChange?: (newPosition: google.maps.LatLngLiteral) => void;
 }
 
-export class LocationScoutingStreetview extends Component<Props> {
+export interface State {
+  loading: boolean;
+}
+
+export class LocationScoutingStreetview extends Component<Props, State> {
+  private hasSetInitialPosition: boolean = false;
   private id: string = `pano-${new Date().getTime()}`;
   private panorama?: google.maps.StreetViewPanorama;
   private ref: React.RefObject<HTMLDivElement> = React.createRef();
+
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      loading: true,
+    };
+  }
 
   componentDidMount() {
     this.loadStreetView();
@@ -39,6 +52,7 @@ export class LocationScoutingStreetview extends Component<Props> {
       zoomControl: true,
     });
     this.setPanoramaListener();
+    this.setState({ loading: false });
   };
 
   setPanoramaListener = () => {
@@ -54,17 +68,24 @@ export class LocationScoutingStreetview extends Component<Props> {
         lat: this.panorama.getPosition().lat(),
         lng: this.panorama.getPosition().lng(),
       };
-      onPositionChange(position);
+      if (this.hasSetInitialPosition) {
+        onPositionChange(position);
+      }
+      this.hasSetInitialPosition = true;
     });
   };
 
   render() {
+    const { loading } = this.state;
     return (
-      <div
-        id={this.id}
-        ref={this.ref}
-        style={{ height: '100%', width: '100%' }}
-      />
+      <div style={{ height: '100%', position: 'relative', width: '100%' }}>
+        {loading && <Loader text="Loading Streetview" />}
+        <div
+          id={this.id}
+          ref={this.ref}
+          style={{ height: '100%', width: '100%' }}
+        />
+      </div>
     );
   }
 }
