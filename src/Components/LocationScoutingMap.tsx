@@ -4,6 +4,7 @@ import { Card, CardContent } from '@material-ui/core';
 import {
   CreateMapElement,
   EditMapElement,
+  Loader,
   LocationScoutingStreetview,
 } from '../Components';
 import { LocationManagerService, MappingService } from '../Services';
@@ -14,6 +15,8 @@ export interface Props {
 }
 
 export interface State {
+  loading: boolean;
+  loadingText: string;
   showCreateMapElementDialog: boolean;
   showEditMapElementDialog: boolean;
 }
@@ -29,6 +32,8 @@ export class LocationScoutingMap extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
+      loading: true,
+      loadingText: 'Loading Map',
       showCreateMapElementDialog: false,
       showEditMapElementDialog: false,
     };
@@ -140,6 +145,7 @@ export class LocationScoutingMap extends Component<Props, State> {
   };
 
   loadMap = async () => {
+    this.setState({ loading: true, loadingText: 'Loading Map' });
     try {
       await MappingService.loadGoogleMaps('map');
       if (!LocationScoutingMap.wasMarkerWithLabelsSet) {
@@ -162,6 +168,7 @@ export class LocationScoutingMap extends Component<Props, State> {
     this.setupMappingServiceListeners();
     this.setupWindowListeners();
     this.setupCluserer();
+    this.setState({ loading: false });
   };
 
   locationToMarkerWithLabels = (location: any): google.maps.Marker => {
@@ -264,6 +271,9 @@ export class LocationScoutingMap extends Component<Props, State> {
   };
 
   setupLocationManagerServiceListeners = () => {
+    LocationManagerService.addListener('itemsUpdateTriggered', () =>
+      this.setState({ loading: true, loadingText: 'Updating Map' })
+    );
     LocationManagerService.addListener(
       'itemsUpdated',
       (isUpdate: boolean = false) => {
@@ -279,6 +289,7 @@ export class LocationScoutingMap extends Component<Props, State> {
         if (isUpdate) {
           this.setupCluserer(true);
         }
+        this.setState({ loading: false });
       }
     );
     LocationManagerService.addListener('locationDeselected', () => {
@@ -371,9 +382,15 @@ export class LocationScoutingMap extends Component<Props, State> {
   };
 
   render() {
-    const { showCreateMapElementDialog, showEditMapElementDialog } = this.state;
+    const {
+      loading,
+      loadingText,
+      showCreateMapElementDialog,
+      showEditMapElementDialog,
+    } = this.state;
     return (
-      <div style={{ height: '100%', width: '100%' }}>
+      <div style={{ height: '100%', width: '100%', position: 'relative' }}>
+        {loading && <Loader text={loadingText} />}
         <div
           id={this.id}
           ref={this.ref}

@@ -35,6 +35,7 @@ export abstract class FirebaseCollectionService<
 
   async createItem(data: T): Promise<void> {
     this.validateAction();
+    this.emit('itemsUpdateTriggered');
     const hash = this.generateActionHash();
     await this.writeActionHashToFirebase(hash);
     const doc = await firebase
@@ -52,6 +53,7 @@ export abstract class FirebaseCollectionService<
         `Cannot delete item with id "${id}". Item does not exist!`
       );
     }
+    this.emit('itemsUpdateTriggered');
     const hash = this.generateActionHash();
     await this.writeActionHashToFirebase(hash);
     await firebase.firestore().collection(this.collectionName).doc(id).delete();
@@ -107,6 +109,7 @@ export abstract class FirebaseCollectionService<
         `Cannot update item with id "${id}". Item does not exist!`
       );
     }
+    this.emit('itemsUpdateTriggered');
     const hash = this.generateActionHash();
     await this.writeActionHashToFirebase(hash);
     await firebase
