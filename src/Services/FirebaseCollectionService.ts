@@ -114,7 +114,7 @@ export abstract class FirebaseCollectionService<
       .collection(this.collectionName)
       .doc(id)
       .update(data);
-    this.items[id] = data;
+    Object.assign(this.items[id], data);
     this.emit('itemsUpdated', true);
   }
 
