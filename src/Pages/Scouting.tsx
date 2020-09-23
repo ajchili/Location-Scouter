@@ -26,11 +26,17 @@ export class Scouting extends Component<Props, State> {
       });
     });
     LocationManagerService.loadItems();
+    window.addEventListener('resize', () => {
+      this.forceUpdate();
+    });
   }
 
   render() {
     const { history } = this.props;
     const { locations } = this.state;
+
+    const isSmallScreen: boolean = window.document.body.offsetWidth < 768;
+
     return (
       <div
         style={{
@@ -45,7 +51,7 @@ export class Scouting extends Component<Props, State> {
           style={{
             display: 'flex',
             flexWrap: 'nowrap',
-            flexFlow: 'row',
+            flexFlow: isSmallScreen ? 'column' : 'row',
             height: '100%',
             overflow: 'auto',
           }}
@@ -63,7 +69,7 @@ export class Scouting extends Component<Props, State> {
             style={{
               display: 'flex',
               flex: 1,
-              height: '100%',
+              maxHeight: isSmallScreen ? '35%' : '100%',
             }}
           >
             <MapElementList locations={locations} />
