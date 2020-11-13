@@ -9,7 +9,10 @@ export class Loading extends Component {
         direction="row"
         justify="center"
         alignItems="center"
-        style={{ height: '100%' }}
+        style={{
+          background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+          height: '100%',
+        }}
       >
         <Grid item>
           <Paper elevation={3} variant="outlined" style={{ padding: 20 }}>
