@@ -8,7 +8,7 @@ import {
   IconButton,
   ListItem,
 } from '@material-ui/core';
-import { Delete, FindInPage } from '@material-ui/icons';
+import { Delete, Directions, FindInPage } from '@material-ui/icons';
 import { MapElement } from '../lib/types';
 import { LocationManagerService, MappingService } from '../Services';
 
@@ -31,6 +31,17 @@ export class MapElementListItem extends Component<Props> {
               }}
             >
               <FindInPage />
+            </IconButton>
+            <IconButton
+              aria-label="get directions"
+              onClick={() => {
+                window.open(
+                  `https://maps.google.com/maps/search/${mapElement.lat},${mapElement.lng}`,
+                  '_blank'
+                );
+              }}
+            >
+              <Directions />
             </IconButton>
             <IconButton
               aria-label="delete map element"
