@@ -39,6 +39,7 @@ const styles = (theme: Theme) => ({
     paddingTop: theme.spacing(1),
     paddingRight: theme.spacing(1),
     zIndex: 1000,
+    minHeight: '80px',
   },
   searchCard: {
     width: '100%',
